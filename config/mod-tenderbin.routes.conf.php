@@ -20,7 +20,7 @@ return [
                 'route' => 'RouteSegment',
                 'options' => [
                     'criteria'    => '[/:resource_hash{\w+}]',
-                    'match_whole' => false,
+                    'match_whole' => true,
                 ],
                 'routes' => [
                     // When POST something
@@ -40,7 +40,7 @@ return [
                 'route' => 'RouteSegment',
                 'options' => [
                     'criteria'    => '/:resource_hash{\w+}',
-                    'match_whole' => false,
+                    'match_whole' => true, // exactly match with this not trailing paths
                 ],
                 'routes' => [
                     // When PUT to Update
@@ -60,7 +60,7 @@ return [
                             'method' => 'DELETE',
                         ],
                         'params'  => [
-                            ListenerDispatch::CONF_KEY => function() { kd('PUT'); },
+                            ListenerDispatch::CONF_KEY => function() { kd('DELETE'); },
                         ],
                     ],
                     // When Retrieve resource
