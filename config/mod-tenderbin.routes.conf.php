@@ -9,8 +9,22 @@ return [
             'match_whole' => false,
         ],
         'params'  => [
-            ListenerDispatch::CONF_KEY => function () {},
-            'token' => /* (\Poirot\OAuth2\Interfaces\Server\Repository\iEntityAccessToken) */ null,
+            ListenerDispatch::CONF_KEY => [
+                // This Action Run First In Chains and Assert Validate Token
+                //! define array allow actions on matched routes chained after this action
+                /*
+                 * [
+                 *    [0] => Callable Defined HERE
+                 *    [1] => routes defined callable
+                 *     ...
+                 */
+                ListenerDispatch::CONF_KEY => [
+                    function ($request = null) {
+                        $token = \Module\TenderBin\assertAuthToken($request);
+                        return ['token' => $token];
+                    }
+                ],
+            ]
         ],
 
         'routes' => [
