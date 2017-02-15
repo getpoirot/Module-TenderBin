@@ -10,10 +10,14 @@
     , "require": {
         "poirot/skeleton": "dev-devel"
         , "poirot/mod-driver_mongo": "dev-devel"
+        , "poirot/oauth2": "dev-devel"
     }
     , "autoload"  : {
         "psr-4": {
             "Module\\TenderBin\\": "src/TenderBin/"
         }
+        , "files": [
+          "_functions.php"
+        ]
     }
 }
