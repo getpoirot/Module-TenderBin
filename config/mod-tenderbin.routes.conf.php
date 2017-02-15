@@ -18,13 +18,8 @@ return [
                  *    [1] => routes defined callable
                  *     ...
                  */
-                ListenerDispatch::CONF_KEY => [
-                    function ($request = null) {
-                        $token = \Module\TenderBin\assertAuthToken($request);
-                        return ['token' => $token];
-                    }
-                ],
-            ]
+                '/module/tenderbin/actions/assertToken',
+            ],
         ],
 
         'routes' => [
@@ -98,7 +93,12 @@ return [
                     'match_whole' => true,
                 ],
                 'params'  => [
-                    ListenerDispatch::CONF_KEY => function() { kd('Info ...'); },
+                    ListenerDispatch::CONF_KEY => [
+                        function($resource_hash = null, $token = null) {
+                            k($resource_hash);
+                            kd($token);
+                        }
+                    ],
                 ],
             ],
         ],
