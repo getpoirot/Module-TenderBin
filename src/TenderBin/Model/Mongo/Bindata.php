@@ -98,7 +98,7 @@ class Bindata
      */
     function setDatetimeExpirationMongo($dateTime)
     {
-        if ($dateTime !== null || !$dateTime instanceof UTCDatetime)
+        if ($dateTime !== null && !$dateTime instanceof UTCDatetime)
             throw new \InvalidArgumentException(sprintf(
                 'Datetime must instance of UTCDatetime or null; given: (%s).'
                 , \Poirot\Std\flatten($dateTime)

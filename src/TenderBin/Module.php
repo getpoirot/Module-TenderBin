@@ -2,7 +2,9 @@
 namespace Module\TenderBin;
 
 use Poirot\Application\Interfaces\Sapi;
+use Poirot\Application\ModuleManager\Interfaces\iModuleManager;
 use Poirot\Application\Sapi\Module\ContainerForFeatureActions;
+use Poirot\Ioc\Container;
 use Poirot\Ioc\Container\BuildContainer;
 use Poirot\Router\BuildRouterStack;
 use Poirot\Router\Interfaces\iRouterStack;
@@ -18,12 +20,32 @@ and 400 for all other invalid requests or responses.
 */
 
 class Module implements Sapi\iSapiModule
+    , Sapi\Module\Feature\iFeatureModuleInitModuleManager
     , Sapi\Module\Feature\iFeatureModuleMergeConfig
     , Sapi\Module\Feature\iFeatureModuleNestActions
+    , Sapi\Module\Feature\iFeatureModuleNestServices
     , Sapi\Module\Feature\iFeatureOnPostLoadModulesGrabServices
 {
     const CONF_KEY = 'module.tenderbin';
 
+
+    /**
+     * Initialize Module Manager
+     *
+     * priority: 1000 C
+     *
+     * @param iModuleManager $moduleManager
+     *
+     * @return void
+     */
+    function initModuleManager(iModuleManager $moduleManager)
+    {
+        // ( ! ) ORDER IS MANDATORY
+
+        if (!$moduleManager->hasLoaded('MongoDriver'))
+            // MongoDriver Module Is Required.
+            $moduleManager->loadModule('MongoDriver');
+    }
 
     /**
      * Register config key/value
@@ -53,7 +75,25 @@ class Module implements Sapi\iSapiModule
      */
     function getActions()
     {
-        return \Poirot\Config\load(__DIR__ . '/../../config/mod-tenderbin_actions');
+        return \Poirot\Config\load(__DIR__ . '/../../config/mod-tenderbin.actions');
+    }
+
+    /**
+     * Get Nested Module Services
+     *
+     * it can be used to manipulate other registered services by modules
+     * with passed Container instance as argument.
+     *
+     * priority not that serious
+     *
+     * @param Container $moduleContainer
+     *
+     * @return null|array|BuildContainer|\Traversable
+     */
+    function getServices(Container $moduleContainer = null)
+    {
+        $conf = \Poirot\Config\load(__DIR__ . '/../../config/mod-tenderbin.services');
+        return $conf;
     }
 
     /**

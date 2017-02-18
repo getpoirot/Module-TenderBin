@@ -1,12 +1,12 @@
 <?php
-namespace Module\OAuth2\Model\Mongo;
+namespace Module\TenderBin\Model\Mongo;
 
 
 use Module\MongoDriver\Model\Repository\aRepository;
 
 use Module\TenderBin\Interfaces\Model\iEntityBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
-use Module\TenderBin\Model\Mongo\Bindata;
+use Module\TenderBin\Model\Bindata as BaseBindata;
 
 
 class BindataRepo
@@ -46,6 +46,34 @@ class BindataRepo
      */
     function insert(iEntityBindata $entity)
     {
-        // TODO: Implement insert() method.
+        $givenIdentifier = $entity->getIdentifier();
+        if (!$givenIdentifier)
+            $givenIdentifier = $this->getNextIdentifier();
+
+        $dateCreated = $entity->getDateCreated();
+        if (!$dateCreated)
+            $dateCreated = new \DateTime();
+
+        # Convert given entity to Persistence Entity Object To Insert
+        $binData = new Bindata;
+        $binData
+            ->setIdentifier($givenIdentifier)
+            ->setTitle($entity->getTitle())
+            ->setMeta($entity->getMeta())
+            ->setContent($entity->getContent())
+            ->setMimeType($entity->getMimeType())
+            ->setOwnerIdentifier($entity->getOwnerIdentifier())
+            ->setDatetimeExpiration($entity->getDatetimeExpiration())
+            ->setDateCreated($dateCreated)
+            ->setProtected($entity->isProtected())
+        ;
+
+        $r = $this->_query()->insertOne($binData);
+
+
+        # Give back entity with persistence identifier
+        $return = clone $entity;
+        $return->setIdentifier($givenIdentifier);
+        return $return;
     }
 }

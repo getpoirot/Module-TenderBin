@@ -1,8 +1,7 @@
 <?php
-namespace Module\OAuth2\Services\Repository;
+namespace Module\TenderBin\Model\Mongo;
 
 use Module\MongoDriver\Services\aServiceRepository;
-use Module\OAuth2\Model\Mongo\BindataRepo;
 
 
 class BindataRepoService

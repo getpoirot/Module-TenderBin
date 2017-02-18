@@ -16,7 +16,7 @@ return [
             // Define Default Services
             'services' =>
             [
-                \Module\OAuth2\Services\Repository\BindataRepoService::class,
+                \Module\TenderBin\Model\Mongo\BindataRepoService::class,
             ],
         ],
     ],

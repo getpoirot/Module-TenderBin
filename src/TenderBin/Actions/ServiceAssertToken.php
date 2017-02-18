@@ -116,6 +116,9 @@ class ServiceAssertToken
 
             try {
                 $token = $validator->hasValidated($requestPsr);
+
+                // TODO check scope
+
             } catch (exOAuthServer $e) {
                 // any oauth server error will set token result to false
                 $token = false;

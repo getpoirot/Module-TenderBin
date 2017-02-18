@@ -18,7 +18,7 @@ return [
     [
         \Module\MongoDriver\Services\aServiceRepository::CONF_KEY =>
         [
-            \Module\OAuth2\Model\Mongo\BindataRepo::class => [
+            \Module\TenderBin\Model\Mongo\BindataRepoService::class => [
                 'collection' => [
                     // query on which collection
                     'name' => 'bins',

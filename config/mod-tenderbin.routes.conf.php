@@ -28,7 +28,7 @@ return [
             'create' => [
                 'route' => 'RouteSegment',
                 'options' => [
-                    'criteria'    => '[/:custom_hash{\w+}]',
+                    'criteria'    => '[/:custom_uid{\w+}]',
                     'match_whole' => true,
                 ],
                 'routes' => [
@@ -40,11 +40,11 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::CONF_KEY => [
-                                function($custom_hash = null, $token = null) {
-                                    k($custom_hash);
-                                    kd($token);
-                                },
-                            ]
+                                \Module\TenderBin\Actions\CreateBinAction::functorAssertTokenExists(),
+                                \Module\TenderBin\Actions\CreateBinAction::functorParseOwnerIdentifierFromToken(),
+                                \Module\TenderBin\Actions\CreateBinAction::functorMakeBindataEntityFromRequest(),
+                                '/module/tenderbin/actions/createBin',
+                            ],
                         ],
                     ],
                 ],

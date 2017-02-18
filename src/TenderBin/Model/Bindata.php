@@ -178,7 +178,7 @@ class Bindata extends DataOptionsOpen
      */
     function setDatetimeExpiration($dateTime)
     {
-        if ($dateTime !== null || !$dateTime instanceof \DateTime)
+        if ($dateTime !== null && !$dateTime instanceof \DateTime)
             throw new \InvalidArgumentException(sprintf(
                 'Datetime must instance of \Datetime or null; given: (%s).'
                 , \Poirot\Std\flatten($dateTime)
