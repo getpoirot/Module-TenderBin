@@ -28,7 +28,7 @@ return [
             'create' => [
                 'route' => 'RouteSegment',
                 'options' => [
-                    'criteria'    => '[/:resource_hash{\w+}]',
+                    'criteria'    => '[/:custom_hash{\w+}]',
                     'match_whole' => true,
                 ],
                 'routes' => [
@@ -39,7 +39,12 @@ return [
                             'method' => 'POST',
                         ],
                         'params'  => [
-                            ListenerDispatch::CONF_KEY => function() { kd('POST'); },
+                            ListenerDispatch::CONF_KEY => [
+                                function($custom_hash = null, $token = null) {
+                                    k($custom_hash);
+                                    kd($token);
+                                },
+                            ]
                         ],
                     ],
                 ],

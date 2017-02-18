@@ -8,6 +8,27 @@ return [
                 'token_endpoint' => '',
                 'authorization'  => '',
             ],
-        ]
-    ]
+        ],
+    ],
+
+
+    # Mongo Driver:
+
+    Module\MongoDriver\Module::CONF_KEY =>
+    [
+        \Module\MongoDriver\Services\aServiceRepository::CONF_KEY =>
+        [
+            \Module\OAuth2\Model\Mongo\BindataRepo::class => [
+                'collection' => [
+                    // query on which collection
+                    'name' => 'bins',
+                    // which client to connect and query with
+                    'client' => \Module\MongoDriver\Module\MongoDriverManagementFacade::CLIENT_DEFAULT,
+                    // ensure indexes
+                    'indexes' => [
+
+                    ],],],
+
+        ],
+    ],
 ];
