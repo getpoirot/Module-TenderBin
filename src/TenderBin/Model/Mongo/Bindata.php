@@ -5,6 +5,7 @@ namespace Module\TenderBin\Model\Mongo;
 use Module\TenderBin\Interfaces\Model\iEntityBindata;
 
 use Module\MongoDriver\Model\tPersistable;
+use Module\TenderBin\Model\BindataOwnerObject;
 use MongoDB\BSON\Persistable;
 use MongoDB\BSON\UTCDatetime;
 
@@ -137,5 +138,24 @@ class Bindata
     function getDatetimeExpiration()
     {
         return parent::getDatetimeExpiration();
+    }
+
+
+    // ...
+
+    /**
+     * Constructs the object from a BSON array or document
+     * Called during unserialization of the object from BSON.
+     * The properties of the BSON array or document will be passed to the method as an array.
+     * @link http://php.net/manual/en/mongodb-bson-unserializable.bsonunserialize.php
+     * @param array $data Properties within the BSON array or document.
+     */
+    function bsonUnserialize(array $data)
+    {
+        if (isset($data['owner_identifier']))
+            // Unserialize BsonDocument to Required BindataOwnerObject from Persistence
+            $data['owner_identifier'] = new BindataOwnerObject($data['owner_identifier']);
+
+        $this->import($data);
     }
 }

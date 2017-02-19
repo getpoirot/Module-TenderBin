@@ -64,7 +64,10 @@ return [
                             'method' => 'PUT',
                         ],
                         'params'  => [
-                            ListenerDispatch::CONF_KEY => function() { kd('PUT'); },
+                            ListenerDispatch::CONF_KEY => [
+                                \Module\TenderBin\Actions\UpdateBinAction::functorAssertTokenExists(),
+                                '/module/tenderbin/actions/updateBin',
+                            ],
                         ],
                     ],
                     // When DELETE resource

@@ -12,7 +12,7 @@ use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
 use Poirot\Http\Interfaces\iHttpRequest;
 
 
-class CreateBinAction
+class UpdateBinAction
     extends aAction
 {
     /** @var iRepoBindata */
@@ -33,13 +33,16 @@ class CreateBinAction
     /**
      * Create New Bin and Persist
      *
+     * @param string $resource_hash
      * @param iEntityBindata $binData
      *
      * @return array
-     * @throws \Exception
      */
-    function __invoke($binData = null)
+    function __invoke($resource_hash = null, $binData = null)
     {
+        k($resource_hash);
+        kd('update');
+
         # Check Whether Bin With Custom Hash Exists?
         if (null !== $customHash = $binData->getIdentifier()) {
             if (false !== $this->repoBins->findOneByHash($customHash))

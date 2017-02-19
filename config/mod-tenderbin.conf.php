@@ -26,9 +26,10 @@ return [
                     'client' => \Module\MongoDriver\Module\MongoDriverManagementFacade::CLIENT_DEFAULT,
                     // ensure indexes
                     'indexes' => [
-
+                        ['key' => ['_id' => 1]],
+                        // db.tenderbin.bins.createIndex({"date_created_mongo": 1}, {expireAfterSeconds: 0});
+                        [ 'key' => ['date_created_mongo' => 1 ], 'expireAfterSeconds'=> 0],
                     ],],],
-
         ],
     ],
 ];

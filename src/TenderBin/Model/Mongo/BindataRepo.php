@@ -31,7 +31,13 @@ class BindataRepo
      */
     function getNextIdentifier()
     {
-        // TODO: Implement getNextIdentifier() method.
+        // note: currently generated hash allows 14,776,336 unique entry
+
+        do {
+            $id = \Poirot\Std\generateShuffleCode(4, \Poirot\Std\CODE_NUMBERS | \Poirot\Std\CODE_STRINGS);
+        } while ($this->findOneByHash($id));
+
+        return $id;
     }
 
     /**
@@ -75,5 +81,21 @@ class BindataRepo
         $return = clone $entity;
         $return->setIdentifier($givenIdentifier);
         return $return;
+    }
+
+    /**
+     * Find Match By Given Hash ID
+     *
+     * @param string|mixed $hash
+     *
+     * @return iEntityBindata|false
+     */
+    function findOneByHash($hash)
+    {
+        $r = $this->_query()->findOne([
+            '_id' => $hash,
+        ]);
+
+        return $r ? $r : false;
     }
 }

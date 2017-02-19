@@ -27,5 +27,13 @@ interface iRepoBindata
      */
     function insert(iEntityBindata $entity);
 
+    /**
+     * Find Match By Given Hash ID
+     *
+     * @param string|mixed $hash
+     *
+     * @return iEntityBindata|false
+     */
+    function findOneByHash($hash);
 
 }
