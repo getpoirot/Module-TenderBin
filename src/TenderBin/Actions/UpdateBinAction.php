@@ -3,10 +3,13 @@ namespace Module\TenderBin\Actions;
 
 use Module\Foundation\Actions\IOC;
 use Module\TenderBin\Exception\exDuplicateEntry;
+use Module\TenderBin\Exception\exResourceNotFound;
 use Module\TenderBin\Interfaces\Model\iEntityBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Module\TenderBin\Model\Bindata;
 use Module\TenderBin\Model\BindataOwnerObject;
+use Poirot\Application\Exception\exAccessDenied;
+use Poirot\Application\Exception\exRouteNotMatch;
 use Poirot\Application\Sapi\Server\Http\ListenerDispatch;
 use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
 use Poirot\Http\Interfaces\iHttpRequest;
@@ -31,55 +34,33 @@ class UpdateBinAction
 
 
     /**
-     * Create New Bin and Persist
+     * Update Bin By Owner
      *
-     * @param string $resource_hash
-     * @param iEntityBindata $binData
+     * @param string             $resource_hash
+     * @param BindataOwnerObject $ownerIdentifier Current resource owner identifier from token assertion
      *
      * @return array
      */
-    function __invoke($resource_hash = null, $binData = null)
+    function __invoke($resource_hash = null, $ownerIdentifier = null, $updates = null)
     {
-        k($resource_hash);
-        kd('update');
+        if (false === $binData = $this->repoBins->findOneByHash($resource_hash))
+            throw new exResourceNotFound(sprintf(
+                'Resource (%s) not found.'
+                , $resource_hash
+            ));
 
-        # Check Whether Bin With Custom Hash Exists?
-        if (null !== $customHash = $binData->getIdentifier()) {
-            if (false !== $this->repoBins->findOneByHash($customHash))
-                throw new exDuplicateEntry(sprintf(
-                    'Bindata with Custom Hash (%s) exists.'
-                    , $customHash
-                ), 400);
+
+        # Check Owner Privilege On Modify Bindata
+        $binOwner = $binData->getOwnerIdentifier();
+        foreach ($binOwner as $k => $v) {
+            if ($ownerIdentifier->{$k} !== $v)
+                // Mismatch Owner!!
+                throw new exAccessDenied('Owner Mismatch; You have not access to edit this data.');
         }
 
 
-        # Persist Data
-        $r = $this->repoBins->insert($binData);
-
-
-        # Build Response
-
-        if ($expiration = $r->getDatetimeExpiration()) {
-            $currDateTime   = new \DateTime();
-            $currDateTime   = $currDateTime->getTimestamp();
-            $expireDateTime = $expiration->getTimestamp();
-
-            $expiration     = $expireDateTime - $currDateTime;
-        }
-
-        $result = array(
-            'hash'           => $r->getIdentifier(),
-            'url'            => (string) IOC::url( 'main/tenderbin/resource/', array('resource_hash' => $r->getIdentifier()) ),
-            'title'          => $r->getTitle(),
-            'content_length' => strlen($r->getContent()),
-            'content_type'   => $r->getMimeType(),
-            'expiration'     => $expiration,
-            'is_protected'   => $r->isProtected(),
-        );
-
-        return array(
-            ListenerDispatch::RESULT_DISPATCH => $result,
-        );
+        // To Implement changes
+        print_r($updates);kd('todo');
     }
 
 
@@ -90,16 +71,14 @@ class UpdateBinAction
      *
      * @return callable
      */
-    static function functorMakeBindataEntityFromRequest()
+    static function functorParseUpdateFromRequest()
     {
         /**
          * @param iHttpRequest       $request
-         * @param BindataOwnerObject $ownerIdentifier
-         * @param string             $custom_uid
          *
-         * @return array [iEntityBindata 'binData']
+         * @return array
          */
-        return function ($request = null, $ownerIdentifier = null, $custom_uid = null) {
+        return function ($request = null) {
             if (!$request instanceof iHttpRequest)
                 throw new \RuntimeException('Cant attain Http Request Object.');
 
@@ -108,30 +87,10 @@ class UpdateBinAction
             $_post = ParseRequestData::_($request)->parseBody();
             $_post = self::_assertInputData($_post);
 
-
-            # Create BinData Entity From Parsed Request Params
-            $binData = new Bindata;
-            $binData->setTitle($_post['title']);
-            $binData->setContent($_post['content']);
-            $binData->setMimeType($_post['content_type']);
-            $binData->setOwnerIdentifier($ownerIdentifier);
-            if (isset($_post['timestamp_expiration']))
-                $binData->setDatetimeExpiration($_post['timestamp_expiration']);
-            if (isset($_post['protected']))
-                $binData->setProtected();
-
-
-            if ($custom_uid !== null)
-                // Set Custom Object Identifier if it given.
-                $binData->setIdentifier($custom_uid);
-
-
-            # Return to next chain as 'binData' argument
-
-            return ['binData' => $binData];
+            # Return to next chain as 'update' argument
+            return ['updates' => $_post];
         };
     }
-
 
     protected static function _assertInputData(array $data)
     {
@@ -153,6 +112,10 @@ class UpdateBinAction
                 $data['timestamp_expiration'] = $d;
             }
         }
+
+        if (isset($data['protected']))
+            // Returns TRUE for "1", "true", "on" and "yes". Returns FALSE otherwise.
+            $data['protected'] = filter_var($data['protected'], FILTER_VALIDATE_BOOLEAN);
 
         return $data;
     }

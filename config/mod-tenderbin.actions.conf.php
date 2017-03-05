@@ -9,7 +9,7 @@ return array(
     'services' => array(
         // assertToken(iHttpRequest $request)
         \Module\TenderBin\Actions\ServiceAssertToken::class,
-        'createBin' => \Module\TenderBin\Actions\CreateBinAction::class,
-        'updateBin' => \Module\TenderBin\Actions\UpdateBinAction::class,
+        'createBinAction' => \Module\TenderBin\Actions\CreateBinAction::class,
+        'updateBinAction' => \Module\TenderBin\Actions\UpdateBinAction::class,
     ),
 );

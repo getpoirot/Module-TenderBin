@@ -43,7 +43,7 @@ return [
                                 \Module\TenderBin\Actions\CreateBinAction::functorAssertTokenExists(),
                                 \Module\TenderBin\Actions\CreateBinAction::functorParseOwnerIdentifierFromToken(),
                                 \Module\TenderBin\Actions\CreateBinAction::functorMakeBindataEntityFromRequest(),
-                                '/module/tenderbin/actions/createBin',
+                                '/module/tenderbin/actions/createBinAction',
                             ],
                         ],
                     ],
@@ -66,7 +66,9 @@ return [
                         'params'  => [
                             ListenerDispatch::CONF_KEY => [
                                 \Module\TenderBin\Actions\UpdateBinAction::functorAssertTokenExists(),
-                                '/module/tenderbin/actions/updateBin',
+                                \Module\TenderBin\Actions\UpdateBinAction::functorParseOwnerIdentifierFromToken(),
+                                \Module\TenderBin\Actions\UpdateBinAction::functorParseUpdateFromRequest(),
+                                '/module/tenderbin/actions/updateBinAction',
                             ],
                         ],
                     ],

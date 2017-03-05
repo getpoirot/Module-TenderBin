@@ -2,6 +2,8 @@
 namespace Module\TenderBin\Actions;
 
 
+use Module\TenderBin\Exception\exResourceNotFound;
+use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Module\TenderBin\Model\BindataOwnerObject;
 use Poirot\Application\Exception\exAccessDenied;
 use Poirot\OAuth2\Interfaces\Server\Repository\iEntityAccessToken;

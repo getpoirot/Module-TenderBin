@@ -41,6 +41,7 @@ class CreateBinAction
     function __invoke($binData = null)
     {
         # Check Whether Bin With Custom Hash Exists?
+
         if (null !== $customHash = $binData->getIdentifier()) {
             if (false !== $this->repoBins->findOneByHash($customHash))
                 throw new exDuplicateEntry(sprintf(
@@ -51,6 +52,7 @@ class CreateBinAction
 
 
         # Persist Data
+
         $r = $this->repoBins->insert($binData);
 
 
@@ -66,12 +68,15 @@ class CreateBinAction
 
         $result = array(
             'hash'           => $r->getIdentifier(),
-            'url'            => (string) IOC::url( 'main/tenderbin/resource/', array('resource_hash' => $r->getIdentifier()) ),
             'title'          => $r->getTitle(),
             'content_length' => strlen($r->getContent()),
             'content_type'   => $r->getMimeType(),
             'expiration'     => $expiration,
             'is_protected'   => $r->isProtected(),
+            'url'            => (string) IOC::url(
+                'main/tenderbin/resource/'
+                , array('resource_hash' => $r->getIdentifier())
+            ),
         );
 
         return array(
@@ -105,7 +110,8 @@ class CreateBinAction
             $_post = ParseRequestData::_($request)->parseBody();
             $_post = self::_assertInputData($_post);
 
-
+            // TODO handle file upload
+            
             # Create BinData Entity From Parsed Request Params
             $binData = new Bindata;
             $binData->setTitle($_post['title']);
@@ -115,7 +121,7 @@ class CreateBinAction
             if (isset($_post['timestamp_expiration']))
                 $binData->setDatetimeExpiration($_post['timestamp_expiration']);
             if (isset($_post['protected']))
-                $binData->setProtected();
+                $binData->setProtected($_post['protected']);
 
 
             if ($custom_uid !== null)
@@ -124,7 +130,6 @@ class CreateBinAction
 
 
             # Return to next chain as 'binData' argument
-
             return ['binData' => $binData];
         };
     }
@@ -150,6 +155,10 @@ class CreateBinAction
                 $data['timestamp_expiration'] = $d;
             }
         }
+
+        if (isset($data['protected']))
+            // Returns TRUE for "1", "true", "on" and "yes". Returns FALSE otherwise.
+            $data['protected'] = filter_var($data['protected'], FILTER_VALIDATE_BOOLEAN);
 
         return $data;
     }
