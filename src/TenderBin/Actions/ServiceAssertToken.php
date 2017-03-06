@@ -1,11 +1,13 @@
 <?php
 namespace Module\TenderBin\Actions;
 
+use Module\TenderBin\Model\BindataOwnerObject;
 use Poirot\Application\aSapi;
 use Poirot\Http\Interfaces\iHttpRequest;
 use Poirot\Http\Psr\ServerRequestBridgeInPsr;
 use Poirot\Ioc\Container\Service\aServiceContainer;
 use Poirot\OAuth2\Interfaces\Server\Repository\iEntityAccessToken;
+use Poirot\OAuth2\Model\AccessToken;
 use Poirot\OAuth2\Resource\Validation\AuthorizeByRemoteServer;
 use Poirot\OAuth2\Server\Exception\exOAuthServer;
 use Poirot\Std\Struct\DataEntity;
@@ -99,8 +101,32 @@ class ServiceAssertToken
 
     protected function _makeCallable()
     {
-        $endpoint = $this->getEndPoint();
-        $authHead = $this->getAuthHeader();
+        $config   = $this->_attainConf();
+        if (isset($config['debug_mode']) && $config['debug_mode']['enabled'])
+        {
+            // Mock Debuging Mode
+            $token = new AccessToken;
+
+            $exprDateTime = __( new \DateTime() )
+                ->add( new \DateInterval(sprintf('PT%sS', 1000)) );
+
+            /** @var BindataOwnerObject $ownerIdentifier */
+            $ownerIdentifier = $config['debug_mode']['owner_identifier'];
+
+            $token
+                ->setDateTimeExpiration($exprDateTime)
+                ->setClientIdentifier($ownerIdentifier->getRealm())
+                ->setOwnerIdentifier($ownerIdentifier->getUid())
+                ->setScopes(array('general')) // TODO full access scope list
+            ;
+
+            $endpoint = null;
+            $authHead = null;
+        } else {
+            $token    = null;
+            $endpoint = $this->getEndPoint();
+            $authHead = $this->getAuthHeader();
+        }
 
         /**
          * Assert Authorization Token From Request
@@ -109,8 +135,16 @@ class ServiceAssertToken
          *
          * @return iEntityAccessToken[]
          */
-        return function (iHttpRequest $request) use ($endpoint, $authHead)
+        return function (iHttpRequest $request) use ($endpoint, $authHead, $token)
         {
+            if ($token) {
+                // Debug Mode, Token is Mocked!!
+                return ['token' => $token];
+            }
+
+
+            # Retrieve Token Assertion From OAuth Resource Server
+
             $requestPsr = new ServerRequestBridgeInPsr($request);
             $validator  = new AuthorizeByRemoteServer($endpoint, $authHead);
 

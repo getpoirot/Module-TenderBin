@@ -4,6 +4,15 @@ use Module\TenderBin\Actions\ServiceAssertToken;
 return [
     \Module\TenderBin\Module::CONF_KEY => [
         ServiceAssertToken::CONF_KEY => [
+            /*
+            'debug_mode' => [
+                // Not Connect to OAuth Server and Used Asserted Token With OwnerObject Below 
+                'enabled' => filter_var(getenv('OAUTH_DEBUG_MODE'), FILTER_VALIDATE_BOOLEAN),
+                'owner_identifier' => new \Module\TenderBin\Model\BindataOwnerObject([
+                    'realm' => 'test',
+                ]),
+            ],
+            */
             'oauth_server' => [
                 'token_endpoint' => '',
                 'authorization'  => '',
