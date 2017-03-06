@@ -6,7 +6,6 @@ use Module\MongoDriver\Model\Repository\aRepository;
 
 use Module\TenderBin\Interfaces\Model\iEntityBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
-use Module\TenderBin\Model\Bindata as BaseBindata;
 
 
 class BindataRepo
