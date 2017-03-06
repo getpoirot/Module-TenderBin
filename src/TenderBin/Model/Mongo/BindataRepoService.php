@@ -10,14 +10,18 @@ class BindataRepoService
     /** @var string Service Name */
     protected $name = 'Bindata';
 
-    
+
     /**
-     * Repository Class Name
+     * Return new instance of Repository
      *
-     * @return string
+     * @param \MongoDB\Database $mongoDb
+     * @param string            $collection
+     *
+     * @return BindataRepo
      */
-    function getRepoClassName()
+    function newRepoInstance($mongoDb, $collection)
     {
-        return BindataRepo::class;
+        $repo = new BindataRepo($mongoDb, $collection);
+        return $repo;
     }
 }
