@@ -28,6 +28,24 @@ return [
         \Module\MongoDriver\Services\aServiceRepository::CONF_KEY =>
         [
             \Module\TenderBin\Model\Mongo\BindataRepoService::class => [
+
+                // Generate Unique ID While Persis Bin Data
+                // with different situation we need vary id generated;
+                // when we use storage as URL shortener we need more comfortable hash_id
+                // but consider when we store lots of files
+                'unique_id_generator' => function($self)
+                {
+                    /** @var $self \Module\TenderBin\Model\Mongo\BindataRepo */
+                    // note: currently generated hash allows 14,776,336 unique entry
+                    do {
+                        $id = \Poirot\Std\generateShuffleCode(4, \Poirot\Std\CODE_NUMBERS | \Poirot\Std\CODE_STRINGS);
+                    } while ($self->findOneByHash($id));
+
+                    return $id;
+                }, // (callable) null = using default
+
+                // ..
+
                 'collection' => [
                     // query on which collection
                     'name' => 'bins',

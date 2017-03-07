@@ -11,6 +11,7 @@
         "poirot/skeleton": "dev-devel"
         , "poirot/mod-driver_mongo": "dev-devel"
         , "poirot/oauth2": "dev-devel"
+        , "poirot/stream": "dev-devel"
     }
     , "autoload"  : {
         "psr-4": {

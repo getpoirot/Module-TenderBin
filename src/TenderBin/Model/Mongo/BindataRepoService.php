@@ -22,6 +22,9 @@ class BindataRepoService
     function newRepoInstance($mongoDb, $collection)
     {
         $repo = new BindataRepo($mongoDb, $collection);
+        if ($hasIdGenerator = $this->_getConf('unique_id_generator'))
+            $repo->setIdentifierGenerator($hasIdGenerator);
+        
         return $repo;
     }
 }

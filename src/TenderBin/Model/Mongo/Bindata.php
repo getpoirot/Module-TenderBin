@@ -29,7 +29,7 @@ class Bindata
      */
     function setIdentifier($identifier)
     {
-        $this->set_Id($identifier);
+        $this->set_Id((string) $identifier);
         return $this;
     }
 

@@ -40,7 +40,7 @@ abstract class aAction
      *
      * @return callable
      */
-    static function functorParseOwnerIdentifierFromToken()
+    static function functorParseOwnerObjectFromToken()
     {
         /**
          * @param null|iEntityAccessToken $token
@@ -57,7 +57,8 @@ abstract class aAction
             $r = new BindataOwnerObject;
             $r->setRealm($token->getClientIdentifier());
             $r->setUid($token->getOwnerIdentifier());
-            return array('ownerIdentifier' => $r);
+            ## pass as argument to next chain
+            return array('ownerObject' => $r);
         };
     }
 }

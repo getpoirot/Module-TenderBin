@@ -6,6 +6,7 @@ use Module\TenderBin\Interfaces\Model\iEntityBindata;
 use Poirot\Std\Interfaces\Struct\iData;
 use Poirot\Std\Struct\DataEntity;
 use Poirot\Std\Struct\DataOptionsOpen;
+use Psr\Http\Message\UploadedFileInterface;
 
 
 class Bindata extends DataOptionsOpen
@@ -100,7 +101,7 @@ class Bindata extends DataOptionsOpen
     /**
      * Set Content
      *
-     * @param mixed $content
+     * @param string|\Traversable|UploadedFileInterface $content
      *
      * @return $this
      */
@@ -113,7 +114,7 @@ class Bindata extends DataOptionsOpen
     /**
      * Content Stored With Bin
      *
-     * @return mixed
+     * @return string|\Traversable|UploadedFileInterface
      */
     function getContent()
     {
