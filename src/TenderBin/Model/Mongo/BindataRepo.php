@@ -174,8 +174,8 @@ class BindataRepo
         $binData->setMimeType($file->getClientMediaType());
         $binData->getMeta()->import([
             '__storage' => 'gridfs',
-            '__is_file' => true,
-            'filesize'  => $size,
+            'is_file'  => true,
+            'filesize' => $size,
         ]);
 
         return $binData;

@@ -76,7 +76,7 @@ class CreateBinAction
             }),
             'expiration'     => $expiration,
             'is_protected'   => $r->isProtected(),
-            'url'            => (string) IOC::url(
+            '_link'            => (string) IOC::url(
                 'main/tenderbin/resource/'
                 , array('resource_hash' => $r->getIdentifier())
             ),
