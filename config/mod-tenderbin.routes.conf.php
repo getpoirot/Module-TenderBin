@@ -54,9 +54,39 @@ return [
                 'route' => 'RouteSegment',
                 'options' => [
                     'criteria'    => '/:resource_hash{\w+}',
-                    'match_whole' => true, // exactly match with this not trailing paths
+                    'match_whole' => false, // exactly match with this not trailing paths
                 ],
                 'routes' => [
+                    // Retrieve Bin Meta Info
+                    'meta' => [
+                        'route' => 'RouteSegment',
+                        'options' => [
+                            'criteria'    => '/meta',
+                            'match_whole' => true,
+                        ],
+                        'params'  => [
+                            ListenerDispatch::CONF_KEY => [
+                                '/module/tenderbin/actions/findBinAction',
+                                \Module\TenderBin\Actions\FindBinAction::functorAssertBinPermissionAccess(),
+                                \Module\TenderBin\Actions\FindBinAction::functorResponseGetInfoResult(),
+                            ],
+                        ],
+                    ],
+                    // Meta Data
+                    'head' => [
+                        'route'   => 'RouteMethod',
+                        'options' => [
+                            'method' => 'HEAD',
+                        ],
+                        'params'  => [
+                            ListenerDispatch::CONF_KEY => [
+                                '/module/tenderbin/actions/findBinAction',
+                                \Module\TenderBin\Actions\FindBinAction::functorAssertBinPermissionAccess(),
+                                \Module\TenderBin\Actions\FindBinAction::functorResponseHeadInfoResult(),
+                            ],
+                        ],
+                    ],
+
                     // When PUT to Update
                     'put' => [
                         'route'   => 'RouteMethod',
@@ -95,22 +125,6 @@ return [
                 ],
             ],
 
-            // Retrieve Bin Meta Info
-            'info' => [
-                'route' => 'RouteSegment',
-                'options' => [
-                    'criteria'    => '/inf/:resource_hash{\w+}',
-                    'match_whole' => true,
-                ],
-                'params'  => [
-                    ListenerDispatch::CONF_KEY => [
-                        function($resource_hash = null, $token = null) {
-                            k($resource_hash);
-                            kd($token);
-                        }
-                    ],
-                ],
-            ],
         ],
     ],
 ];

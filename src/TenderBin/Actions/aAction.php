@@ -3,6 +3,7 @@ namespace Module\TenderBin\Actions;
 
 
 use Module\TenderBin\Exception\exResourceNotFound;
+use Module\TenderBin\Interfaces\Model\iEntityBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Module\TenderBin\Model\BindataOwnerObject;
 use Poirot\Application\Exception\exAccessDenied;
@@ -19,7 +20,7 @@ abstract class aAction
     /**
      * Assert Token In Actions that need token is valid
      *
-     * @return callable
+     * @return \Closure
      */
     static function functorAssertTokenExists()
     {
@@ -38,7 +39,7 @@ abstract class aAction
     /**
      * Parse Owner Identifier Object from given Token Assertion
      *
-     * @return callable
+     * @return \Closure
      */
     static function functorParseOwnerObjectFromToken()
     {
@@ -59,6 +60,44 @@ abstract class aAction
             $r->setUid($token->getOwnerIdentifier());
             ## pass as argument to next chain
             return array('ownerObject' => $r);
+        };
+    }
+
+    /**
+     * Assert BinData Access By Check Permission
+     * note: determine current user from token
+     *
+     * @return \Closure
+     */
+    static function functorAssertBinPermissionAccess()
+    {
+        /**
+         * @param iEntityBindata     $binData
+         * @param iEntityAccessToken $token
+         * @return array
+         */
+        return function ($binData = null, $token = null)
+        {
+            if (!$binData instanceof iEntityBindata)
+                throw new \RuntimeException(sprintf(
+                    'BinData Entity must be instance of iEntityBindata; given: (%s).'
+                    , gettype($token)
+                ));
+            
+            
+            if (!$binData->isProtected())
+                // Bin Data is not protected; let it play ...
+                return;
+            
+            
+            # Check Owner Privilege On Modify Bindata
+            $curOwnerObject = static::functorParseOwnerObjectFromToken()->__invoke($token);
+            $binOwnerObject = $binData->getOwnerIdentifier();
+            foreach ($binOwnerObject as $k => $v) {
+                if ($curOwnerObject->{$k} !== $v)
+                    // Mismatch Owner!!
+                    throw new exAccessDenied('Owner Mismatch; You have not access to edit this data.');
+            }
         };
     }
 }

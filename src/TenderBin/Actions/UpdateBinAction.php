@@ -45,12 +45,7 @@ class UpdateBinAction
 
 
         # Check Owner Privilege On Modify Bindata
-        $binOwner = $binData->getOwnerIdentifier();
-        foreach ($binOwner as $k => $v) {
-            if ($ownerIdentifier->{$k} !== $v)
-                // Mismatch Owner!!
-                throw new exAccessDenied('Owner Mismatch; You have not access to edit this data.');
-        }
+        
 
 
         // To Implement changes

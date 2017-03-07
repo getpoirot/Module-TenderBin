@@ -11,5 +11,6 @@ return array(
         \Module\TenderBin\Actions\ServiceAssertToken::class,
         'createBinAction' => \Module\TenderBin\Actions\CreateBinAction::class,
         'updateBinAction' => \Module\TenderBin\Actions\UpdateBinAction::class,
+        'findBinAction'   => \Module\TenderBin\Actions\FindBinAction::class,
     ),
 );
