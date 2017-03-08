@@ -109,7 +109,11 @@ return [
                             'method' => 'DELETE',
                         ],
                         'params'  => [
-                            ListenerDispatch::CONF_KEY => function() { kd('DELETE'); },
+                            ListenerDispatch::CONF_KEY => [
+                                '/module/tenderbin/actions/findBinAction',
+                                \Module\TenderBin\Actions\DeleteBinAction::functorAssertBinPermissionAccess(),
+                                '/module/tenderbin/actions/deleteBinAction',
+                            ],
                         ],
                     ],
                     // When Retrieve resource

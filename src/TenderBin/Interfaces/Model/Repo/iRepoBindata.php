@@ -36,4 +36,15 @@ interface iRepoBindata
      */
     function findOneByHash($hash);
 
+    /**
+     * Delete Bin Data With Given Hash
+     * 
+     * - consider when bin data is file
+     * - consider to delete version tags
+     * 
+     * @param string|mixed $hash
+     * 
+     * @return boolean
+     */
+    function deleteOneByHash($hash);
 }

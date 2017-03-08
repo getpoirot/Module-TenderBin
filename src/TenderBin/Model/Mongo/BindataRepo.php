@@ -7,6 +7,7 @@ use Module\MongoDriver\Model\Repository\aRepository;
 use Module\TenderBin\Interfaces\Model\iEntityBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use MongoDB\BSON\ObjectID;
+use MongoDB\GridFS\Exception\FileNotFoundException;
 use Poirot\Stream\ResourceStream;
 use Poirot\Stream\Streamable;
 use Psr\Http\Message\UploadedFileInterface;
@@ -132,6 +133,38 @@ class BindataRepo
     }
 
 
+    /**
+     * Delete Bin Data With Given Hash
+     *
+     * - consider when bin data is file
+     * - consider to delete version tags
+     *
+     * @param string|mixed $hash
+     *
+     * @return boolean
+     */
+    function deleteOneByHash($hash)
+    {
+        # Find and delete object
+        /** @var iEntityBindata $r */
+        $r = $this->_query()->findOneAndDelete([
+            '_id' => $hash,
+        ]);
+
+
+        # Check Whether BinData is Associated To File??
+        if ($r->getMeta()->has('is_file'))
+            $this->_storeDeleteById($hash);
+
+
+        # Delete Tagged Versions
+        // TODO Delete Tagged Versions
+
+
+        return true;
+    }
+
+
     // ....
 
     protected function _storeBinData(Bindata $binData)
@@ -179,5 +212,17 @@ class BindataRepo
         ]);
 
         return $binData;
+    }
+
+    protected function _storeDeleteById($hash)
+    {
+        $gridFS   = $this->gateway->selectGridFSBucket();
+        try {
+            $gridFS->delete($hash);
+        } catch (FileNotFoundException $e) {
+            return false;
+        }
+
+        return true;
     }
 }
