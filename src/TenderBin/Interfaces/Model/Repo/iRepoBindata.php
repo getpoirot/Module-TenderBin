@@ -10,9 +10,11 @@ interface iRepoBindata
      * Generate next unique identifier to persist
      * data with
      *
+     * @param null|string $id
+     * 
      * @return mixed
      */
-    function getNextIdentifier();
+    function genNextIdentifier($id = null);
 
 
     /**

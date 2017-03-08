@@ -1,7 +1,7 @@
 <?php
 namespace Module\TenderBin\Model\Mongo;
 
-
+use Module\TenderBin\Model\Mongo;
 use Module\MongoDriver\Model\Repository\aRepository;
 
 use Module\TenderBin\Interfaces\Model\iEntityBindata;
@@ -27,7 +27,7 @@ class BindataRepo
      */
     protected function __init()
     {
-        $this->setModelPersist(new Bindata);
+        $this->setModelPersist(new Mongo\Bindata);
     }
 
 
@@ -35,21 +35,23 @@ class BindataRepo
      * Generate next unique identifier to persist
      * data with
      *
+     * @param null|string $id
+     *
      * @return mixed
      */
-    function getNextIdentifier()
+    function genNextIdentifier($id = null)
     {
-        if ($this->_functorIDGenerator) {
-            return (string) call_user_func($this->_functorIDGenerator, $this);
-        }
-        
-        return (string) new ObjectID();
+        if ($this->_functorIDGenerator)
+            // Generator will build ID
+            return call_user_func($this->_functorIDGenerator, $id, $this);
+
+        return ($id !== null) ? new ObjectID( (string)$id ) : new ObjectID;
     }
 
     /**
      * Set ID Generator Callable
      * 
-     * @param callable $callable function($self): string // generated id
+     * @param callable $callable function($id=null, $self=null): iObjectID // generated id
      * 
      * @return $this
      */
@@ -66,6 +68,7 @@ class BindataRepo
         return $this;
     }
     
+    
     // ..
     
     /**
@@ -80,16 +83,16 @@ class BindataRepo
      */
     function insert(iEntityBindata $entity)
     {
-        $givenIdentifier = $entity->getIdentifier();
-        if (!$givenIdentifier)
-            $givenIdentifier = $this->getNextIdentifier();
+        $givenIdentifier = $this->genNextIdentifier(
+            $entity->getIdentifier()
+        );
 
         $dateCreated = $entity->getDateCreated();
         if (!$dateCreated)
             $dateCreated = new \DateTime();
 
         # Convert given entity to Persistence Entity Object To Insert
-        $binData = new Bindata;
+        $binData = new Mongo\Bindata;
         $binData
             ->setIdentifier($givenIdentifier)
             ->setTitle($entity->getTitle())
@@ -102,15 +105,19 @@ class BindataRepo
             ->setProtected($entity->isProtected())
         ;
 
+        
+        # Store BinData File Content In Storage
         if ($entity->getContent() instanceof UploadedFileInterface) {
-            // Handle file storage
+            // Handle file storage return meta record
             $binData = $this->_storeBinData($binData);
         }
 
+        
+        # Persist BinData Record 
         $r = $this->_query()->insertOne($binData);
-
-
-        # Give back entity with persistence identifier
+        
+        
+        # Give back entity with given id and meta record info
         $return = clone $binData;
         $return->setIdentifier($givenIdentifier);
         return $return;
@@ -126,13 +133,12 @@ class BindataRepo
     function findOneByHash($hash)
     {
         $r = $this->_query()->findOne([
-            '_id' => $hash,
+            '_id' => $this->genNextIdentifier($hash),
         ]);
 
         return $r ? $r : false;
     }
-
-
+    
     /**
      * Delete Bin Data With Given Hash
      *
@@ -145,6 +151,8 @@ class BindataRepo
      */
     function deleteOneByHash($hash)
     {
+        $hash = $this->genNextIdentifier($hash);
+        
         # Find and delete object
         /** @var iEntityBindata $r */
         $r = $this->_query()->findOneAndDelete([

@@ -38,7 +38,7 @@ class DeleteBinAction
         return [
             ListenerDispatch::RESULT_DISPATCH => [
                 '_self' => [
-                    'hash' => $resource_hash,
+                    'hash' => (string) $resource_hash,
                 ],
                 'status' => 'deleted',
             ],

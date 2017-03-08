@@ -1,9 +1,9 @@
 <?php
-use Module\TenderBin\Actions\ServiceAssertToken;
+use Module\TenderBin\Actions\ServiceAssertTokenAction;
 
 return [
     \Module\TenderBin\Module::CONF_KEY => [
-        ServiceAssertToken::CONF_KEY => [
+        ServiceAssertTokenAction::CONF_KEY => [
             /*
             'debug_mode' => [
                 // Not Connect to OAuth Server and Used Asserted Token With OwnerObject Below 
@@ -33,7 +33,7 @@ return [
                 // with different situation we need vary id generated;
                 // when we use storage as URL shortener we need more comfortable hash_id
                 // but consider when we store lots of files
-                'unique_id_generator' => function($self)
+                'unique_id_generator' => function($id = null, $self = null)
                 {
                     /** @var $self \Module\TenderBin\Model\Mongo\BindataRepo */
                     // note: currently generated hash allows 14,776,336 unique entry
@@ -41,6 +41,7 @@ return [
                         $id = \Poirot\Std\generateShuffleCode(4, \Poirot\Std\CODE_NUMBERS | \Poirot\Std\CODE_STRINGS);
                     } while ($self->findOneByHash($id));
 
+                    // TODO iObjectID interface
                     return $id;
                 }, // (callable) null = using default
 

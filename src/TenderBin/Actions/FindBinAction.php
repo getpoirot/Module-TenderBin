@@ -1,20 +1,13 @@
 <?php
 namespace Module\TenderBin\Actions;
 
-use Module\Foundation\Actions\IOC;
-use Module\TenderBin\Exception\exDuplicateEntry;
 use Module\TenderBin\Exception\exResourceNotFound;
 use Module\TenderBin\Interfaces\Model\iEntityBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
-use Module\TenderBin\Model\Bindata;
-use Module\TenderBin\Model\BindataOwnerObject;
 use Poirot\Application\Sapi\Server\Http\ListenerDispatch;
 use Poirot\Http\Header\FactoryHttpHeader;
-use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
 use Poirot\Http\HttpResponse;
 use Poirot\Http\Interfaces\iHeaders;
-use Poirot\Http\Interfaces\iHttpRequest;
-use Psr\Http\Message\UploadedFileInterface;
 
 
 class FindBinAction
@@ -83,7 +76,7 @@ class FindBinAction
             return [
                 ListenerDispatch::RESULT_DISPATCH => [
                     '_self'      => [
-                        'hash' => $binData->getIdentifier(),
+                        'hash' => (string) $binData->getIdentifier(),
                     ],
                     'title'        => $binData->getTitle(),
                     'mime_type'    => $binData->getMimeType(),
@@ -119,14 +112,16 @@ class FindBinAction
             }
 
 
+            $meta = \Poirot\Std\cast($binData->getMeta())->toArray(function($_, $k) {
+                return substr($k, 0, 2) === '__'; // filter system specific meta data
+            });
+
             $r = [
                 'title'        => $binData->getTitle(),
                 'mime_type' => $binData->getMimeType(),
                 'expiration'   => $expiration,
                 'is_protected' => (boolean) $binData->isProtected(),
-                'meta'         => \Poirot\Std\cast($binData->getMeta())->toArray(function($_, $k) {
-                    return substr($k, 0, 2) === '__'; // filter system specific meta data
-                }),
+                'meta'         => $meta,
             ];
 
             $_f_AddHeaders = function(iHeaders $headers, $r, $prefix = 'X-') use (&$_f_AddHeaders)

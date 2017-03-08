@@ -13,7 +13,7 @@ use Poirot\OAuth2\Server\Exception\exOAuthServer;
 use Poirot\Std\Struct\DataEntity;
 
 
-class ServiceAssertToken
+class ServiceAssertTokenAction
     extends aServiceContainer
 {
     const CONF_KEY = 'ServiceAssertToken';
