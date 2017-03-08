@@ -68,7 +68,7 @@ class CreateBinAction
         }
 
         $result = array(
-            'hash'           => $r->getIdentifier(),
+            'hash'           => (string) $r->getIdentifier(),
             'title'          => $r->getTitle(),
             'content_type'   => $r->getMimeType(),
             'meta'           => \Poirot\Std\cast($r->getMeta())->toArray(function($_, $k) {

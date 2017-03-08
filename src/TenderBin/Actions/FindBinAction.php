@@ -12,6 +12,7 @@ use Poirot\Application\Sapi\Server\Http\ListenerDispatch;
 use Poirot\Http\Header\FactoryHttpHeader;
 use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
 use Poirot\Http\HttpResponse;
+use Poirot\Http\Interfaces\iHeaders;
 use Poirot\Http\Interfaces\iHttpRequest;
 use Psr\Http\Message\UploadedFileInterface;
 
@@ -117,12 +118,10 @@ class FindBinAction
                 $expiration     = $expireDateTime - $currDateTime;
             }
 
+
             $r = [
-                '_self'      => [
-                    'hash' => $binData->getIdentifier(),
-                ],
                 'title'        => $binData->getTitle(),
-                'content_type' => $binData->getMimeType(),
+                'mime_type' => $binData->getMimeType(),
                 'expiration'   => $expiration,
                 'is_protected' => (boolean) $binData->isProtected(),
                 'meta'         => \Poirot\Std\cast($binData->getMeta())->toArray(function($_, $k) {
@@ -130,18 +129,26 @@ class FindBinAction
                 }),
             ];
 
-            // TODO Test Response Headers
-            $response = new HttpResponse;
-            foreach ($r as $k => $v) {
-                if (is_array($v))
-                    continue;
+            $_f_AddHeaders = function(iHeaders $headers, $r, $prefix = 'X-') use (&$_f_AddHeaders)
+            {
+                foreach ($r as $k => $v) {
+                    $name = strtr($k, '_', ' ');
+                    $name = strtr(ucwords(strtolower($name)), ' ', '-');
 
-                $name = strtr($k, '_', ' ');
-                $name = 'X-'.strtr(ucwords(strtolower($name)), ' ', '-');
-                $valuable = [$name, $v];
-                $header   = FactoryHttpHeader::of($valuable);
-                $response->headers()->insert($header);
-            }
+                    if (is_array($v)) {
+                        $_f_AddHeaders($headers, $v, $prefix.$name.'-');
+                        continue;
+                    }
+
+
+                    $valuable = [$prefix.$name => $v];
+                    $header   = FactoryHttpHeader::of($valuable);
+                    $headers->insert($header);
+                }
+            };
+
+            $response = new HttpResponse;
+            $_f_AddHeaders($response->headers(), $r);
 
             return [
                 ListenerDispatch::RESULT_DISPATCH => $response,
