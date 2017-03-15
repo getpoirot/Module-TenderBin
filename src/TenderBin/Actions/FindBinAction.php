@@ -1,6 +1,7 @@
 <?php
 namespace Module\TenderBin\Actions;
 
+use Module\Foundation\Actions\IOC;
 use Module\TenderBin\Exception\exResourceNotFound;
 use Module\TenderBin\Interfaces\Model\iEntityBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
@@ -43,9 +44,26 @@ class FindBinAction
                 'Resource (%s) not found.'
                 , $resource_hash
             ));
-        
-        
-        return ['binData' => $binData];
+
+
+        # Retrieve Available Versions
+        $subVers  = $this->repoBins->findAllSubversionsOf($resource_hash);
+        $versions = array();
+        /** @var iEntityBindata $sv */
+        foreach ($subVers as $sv) {
+            $versions[$sv->getVersion()->getTag()] = [
+                '$bindata' => [
+                    'uid' => $v = (string) $sv->getIdentifier(),
+                ],
+                '_link' => ( $v ) ? (string) IOC::url(
+                    'main/tenderbin/resource/'
+                    , array('resource_hash' => (string) $v)
+                ) : null,
+            ];
+        }
+
+
+        return ['binData' => $binData, 'versions' => $versions];
     }
 
 
@@ -62,7 +80,7 @@ class FindBinAction
          * @param iEntityBindata $binData
          * @return array
          */
-        return function ($binData = null)
+        return function ($binData = null, $versions = null)
         {
             if ($expiration = $binData->getDatetimeExpiration()) {
                 $currDateTime   = new \DateTime();
@@ -72,7 +90,6 @@ class FindBinAction
                 $expiration     = $expireDateTime - $currDateTime;
             }
 
-            // TODO available versions
             return [
                 ListenerDispatch::RESULT_DISPATCH => [
                     '_self'      => [
@@ -85,6 +102,12 @@ class FindBinAction
                     'meta'         => \Poirot\Std\cast($binData->getMeta())->toArray(function($_, $k) {
                         return substr($k, 0, 2) === '__'; // filter system specific meta data
                     }),
+                    'versions'     => $versions,
+
+                    '_link' => (string) IOC::url(
+                        'main/tenderbin/resource/'
+                        , array('resource_hash' => (string) $binData->getIdentifier())
+                    ),
                 ],
             ];
         };
@@ -101,7 +124,7 @@ class FindBinAction
          * @param iEntityBindata $binData
          * @return array
          */
-        return function ($binData = null)
+        return function ($binData = null, $versions = null)
         {
             if ($expiration = $binData->getDatetimeExpiration()) {
                 $currDateTime   = new \DateTime();
@@ -122,6 +145,7 @@ class FindBinAction
                 'expiration'   => $expiration,
                 'is_protected' => (boolean) $binData->isProtected(),
                 'meta'         => $meta,
+                'versions'     => $versions,
             ];
 
             $_f_AddHeaders = function(iHeaders $headers, $r, $prefix = 'X-') use (&$_f_AddHeaders)

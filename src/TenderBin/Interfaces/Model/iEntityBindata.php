@@ -1,6 +1,7 @@
 <?php
 namespace Module\TenderBin\Interfaces\Model;
 
+use Module\TenderBin\Interfaces\Model\BinData\iObjectVersion;
 use Poirot\Std\Interfaces\Struct\iData;
 
 
@@ -71,4 +72,11 @@ interface iEntityBindata
      * @return bool
      */
     function isProtected();
+
+    /**
+     * Get Version Status
+     * 
+     * @return iObjectVersion
+     */
+    function getVersion();
 }

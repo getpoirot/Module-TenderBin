@@ -2,16 +2,15 @@
 namespace Module\TenderBin\Actions;
 
 
-use Module\TenderBin\Exception\exResourceNotFound;
 use Module\TenderBin\Interfaces\Model\iEntityBindata;
-use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Module\TenderBin\Model\BindataOwnerObject;
 use Poirot\Application\Exception\exAccessDenied;
 use Poirot\OAuth2\Interfaces\Server\Repository\iEntityAccessToken;
 
+
 abstract class aAction
 {
-    abstract function __invoke($_ = null);
+    abstract function __invoke(/*$_ = null*/);
 
 
 
@@ -67,31 +66,36 @@ abstract class aAction
      * Assert BinData Access By Check Permission
      * note: determine current user from token
      *
+     * @param boolean $forceCheckPermission Force Check Permission On None Protected Resource
+     *
      * @return \Closure
      */
-    static function functorAssertBinPermissionAccess()
+    static function functorAssertBinPermissionAccess($forceCheckPermission = false)
     {
         /**
          * @param iEntityBindata     $binData
          * @param iEntityAccessToken $token
          * @return array
          */
-        return function ($binData = null, $token = null)
+        return function ($binData = null, $token = null) use ($forceCheckPermission)
         {
             if (!$binData instanceof iEntityBindata)
                 throw new \RuntimeException(sprintf(
                     'BinData Entity must be instance of iEntityBindata; given: (%s).'
                     , gettype($token)
                 ));
-            
-            
-            if (!$binData->isProtected())
-                // Bin Data is not protected; let it play ...
-                return;
+
+
+            if (false === $forceCheckPermission)
+                // Force To Check Owner Permission 
+                if (!$binData->isProtected())
+                    // Bin Data is not protected; let it play ...
+                    return;
             
             
             # Check Owner Privilege On Modify Bindata
             $curOwnerObject = static::functorParseOwnerObjectFromToken()->__invoke($token);
+            $curOwnerObject = current($curOwnerObject);
             $binOwnerObject = $binData->getOwnerIdentifier();
             foreach ($binOwnerObject as $k => $v) {
                 if ($curOwnerObject->{$k} !== $v)

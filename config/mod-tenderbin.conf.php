@@ -55,8 +55,12 @@ return [
                     // ensure indexes
                     'indexes' => [
                         ['key' => ['_id' => 1]],
-                        // db.tenderbin.bins.createIndex({"date_created_mongo": 1}, {expireAfterSeconds: 0});
-                        [ 'key' => ['date_created_mongo' => 1 ], 'expireAfterSeconds'=> 0],
+                        ['key' => ['meta' => 1]],
+                        ['key' => ['mime_type' => 1]],
+                        ['key' => ['owner_identifier' => 1]],
+                        // db.tenderbin.bins.createIndex({"datetime_expiration_mongo": 1}, {expireAfterSeconds: 0});
+                        [ 'key' => ['datetime_expiration_mongo' => 1 ], 'expireAfterSeconds'=> 0],
+                        [ 'key' => ['version.subversion_of' => 1 ], 'version.tag'=> 1],
                     ],],],
         ],
     ],

@@ -2,6 +2,7 @@
 namespace Module\TenderBin\Model;
 
 
+use Module\TenderBin\Interfaces\Model\BinData\iObjectVersion;
 use Module\TenderBin\Interfaces\Model\iEntityBindata;
 use Poirot\Std\Interfaces\Struct\iData;
 use Poirot\Std\Struct\DataEntity;
@@ -9,7 +10,8 @@ use Poirot\Std\Struct\DataOptionsOpen;
 use Psr\Http\Message\UploadedFileInterface;
 
 
-class Bindata extends DataOptionsOpen
+class Bindata
+    extends DataOptionsOpen
     implements iEntityBindata
 {
     protected $identifier;
@@ -21,6 +23,8 @@ class Bindata extends DataOptionsOpen
     protected $datetimeExpiration;
     protected $dateCreated;
     protected $protected = false;
+    /** @var iObjectVersion */
+    protected $version;
 
 
     /**
@@ -202,12 +206,19 @@ class Bindata extends DataOptionsOpen
     /**
      * Set Date Created
      *
-     * @param \DateTime $dateTime
+     * @param \DateTime|null $dateTime
      *
      * @return $this
      */
-    function setDateCreated(\DateTime $dateTime)
+    function setDateCreated($dateTime)
     {
+        if ( !($dateTime === null || $dateTime instanceof \DateTime) )
+            throw new \InvalidArgumentException(sprintf(
+                'Datetime must instance of \Datetime or null; given: (%s).'
+                , \Poirot\Std\flatten($dateTime)
+            ));
+            
+        
         $this->dateCreated = $dateTime;
         return $this;
     }
@@ -246,5 +257,24 @@ class Bindata extends DataOptionsOpen
     function isProtected()
     {
         return $this->protected;
+    }
+
+    /**
+     * Get Version Status
+     *
+     * @return iObjectVersion
+     */
+    function getVersion()
+    {
+        if (!$this->version)
+            $this->setVersion(new BindataVersionObject);
+        
+        return $this->version;
+    }
+
+    function setVersion(iObjectVersion $version)
+    {
+        $this->version = $version;
+        return $this;
     }
 }

@@ -6,6 +6,7 @@ use Module\TenderBin\Interfaces\Model\iEntityBindata;
 
 use Module\MongoDriver\Model\tPersistable;
 use Module\TenderBin\Model\BindataOwnerObject;
+use Module\TenderBin\Model\BindataVersionObject;
 use MongoDB\BSON\Persistable;
 use MongoDB\BSON\UTCDatetime;
 
@@ -155,6 +156,10 @@ class Bindata
         if (isset($data['owner_identifier']))
             // Unserialize BsonDocument to Required BindataOwnerObject from Persistence
             $data['owner_identifier'] = new BindataOwnerObject($data['owner_identifier']);
+
+        if (isset($data['version']))
+            // Unserialize BsonDocument to Required VersionObject from Persistence
+            $data['version'] = new BindataVersionObject($data['version']);
 
         $this->import($data);
     }

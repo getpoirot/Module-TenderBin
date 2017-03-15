@@ -1,6 +1,7 @@
 <?php
 namespace Module\TenderBin\Model\Mongo;
 
+use Module\TenderBin\Exception\exDuplicateEntry;
 use Module\TenderBin\Model\Mongo;
 use Module\MongoDriver\Model\Repository\aRepository;
 
@@ -30,7 +31,6 @@ class BindataRepo
         $this->setModelPersist(new Mongo\Bindata);
     }
 
-
     /**
      * Generate next unique identifier to persist
      * data with
@@ -46,6 +46,39 @@ class BindataRepo
             return call_user_func($this->_functorIDGenerator, $id, $this);
 
         return ($id !== null) ? new ObjectID( (string)$id ) : new ObjectID;
+    }
+
+
+    /**
+     * Find By Search Term
+     *
+     * @param array  $term
+     * @param string $offset
+     * @param int    $limit
+     *
+     * @return \Traversable
+     */
+    function find(array $term, $offset = null, $limit = null)
+    {
+        # search term to mongo condition
+        $condition = $this->__importCondition($term);
+        $r = $this->_query()->find(
+            $condition
+            , [
+                'skip' => $offset,
+                'limit' => $limit,
+                'projection' => [
+                    '_id'   => true,
+                    'title' => true,
+                    'mime_type' => true,
+                    'version'   => true,
+                    'protected' => true,
+                    'meta'      => true,
+                ]
+            ]
+        );
+
+        return $r;
     }
 
     /**
@@ -74,8 +107,11 @@ class BindataRepo
     /**
      * Persist Bindata
      *
+     * - check given entity identifier not exists; must be unique
      * - if Bindata entity has no identifier used ::nextIdentifier
      *   to assign something new
+     * - if the entity is subversion then old version for this entity exists must be deleted
+     *   and replaced with this one
      *
      * @param iEntityBindata $entity
      *
@@ -83,19 +119,26 @@ class BindataRepo
      */
     function insert(iEntityBindata $entity)
     {
-        $givenIdentifier = $this->genNextIdentifier(
-            $entity->getIdentifier()
-        );
+        $givenIdentifier = $entity->getIdentifier();
+        if ($givenIdentifier && false !== $this->findOneByHash($givenIdentifier))
+            throw new exDuplicateEntry(sprintf(
+                'Bindata with Hash (%s) exists.'
+                , (string) $givenIdentifier
+            ), 400);
+
+
+        $givenIdentifier = $this->genNextIdentifier($givenIdentifier);
 
         $dateCreated = $entity->getDateCreated();
         if (!$dateCreated)
             $dateCreated = new \DateTime();
-
+        
         # Convert given entity to Persistence Entity Object To Insert
         $binData = new Mongo\Bindata;
         $binData
             ->setIdentifier($givenIdentifier)
             ->setTitle($entity->getTitle())
+            ->setVersion($entity->getVersion())
             ->setMeta($entity->getMeta())
             ->setContent($entity->getContent())
             ->setMimeType($entity->getMimeType())
@@ -105,7 +148,18 @@ class BindataRepo
             ->setProtected($entity->isProtected())
         ;
 
-        
+
+        # check has any same subversion
+        if ($entity->getVersion()->getSubversionOf()) {
+            // this store as subversion of base bindata and must not has duplicate version
+            $sb = $this->findOneTagedSubverOf($entity->getVersion()->getSubversionOf(), $entity->getVersion()->getTag());
+            if ($sb) {
+                // Delete current version and replace with this one
+                $this->deleteOneByHash($sb->getIdentifier());
+            }
+        }
+
+
         # Store BinData File Content In Storage
         if ($entity->getContent() instanceof UploadedFileInterface) {
             // Handle file storage return meta record
@@ -121,6 +175,33 @@ class BindataRepo
         $return = clone $binData;
         $return->setIdentifier($givenIdentifier);
         return $return;
+    }
+
+    /**
+     * Save Entity By Insert Or Update
+     *
+     * @param iEntityBindata $entity
+     *
+     * @return mixed
+     */
+    function save(iEntityBindata $entity)
+    {
+        if ($entity->getIdentifier())
+        {
+            // Delete Currently Entity and Replace with Changes
+
+            // just delete bin meta
+            $this->_query()->deleteOne([
+                '_id' => $entity->getIdentifier(),
+            ]);
+
+            if ($entity->getContent() instanceof UploadedFileInterface)
+                // Also delete related stored file
+                $this->_storeDeleteById($entity->getIdentifier());
+        }
+        
+        $r = $this->insert($entity);
+        return $r;
     }
 
     /**
@@ -166,12 +247,50 @@ class BindataRepo
 
 
         # Delete Tagged Versions
-        // TODO Delete Tagged Versions
-
-
+        $subVers = $this->findAllSubversionsOf($hash);
+        /** @var iEntityBindata $v */
+        foreach ($subVers as $v)
+            $this->deleteOneByHash($v->getIdentifier());
+        
         return true;
     }
 
+    /**
+     * Find All Subversions Of a Bin Entity
+     *
+     * @param string|mixed $hash
+     *
+     * @return \MongoCursor
+     */
+    function findAllSubversionsOf($hash)
+    {
+        $currStoredVer = $this->_query()->find([
+            'version.subversion_of' => $this->genNextIdentifier( $hash ),
+        ]);
+
+        return $currStoredVer;
+    }
+
+    /**
+     * Find Subversion Of an Entity Bin IF Has?
+     *
+     * @param $hash
+     * @param $tag
+     *
+     * @return iEntityBindata|false
+     */
+    function findOneTagedSubverOf($hash, $tag)
+    {
+        $hash = $this->genNextIdentifier( $hash );
+
+        $r = $this->_query()->findOne([
+            'version.subversion_of' => $hash,
+            'version.tag'           => (string) $tag,
+        ]);
+
+        return ($r) ? $r : false;
+    }
+    
 
     // ....
 
@@ -198,7 +317,7 @@ class BindataRepo
         $streamGrid = new Streamable($resGrid);
         $size       = 0;
         while (!$file->getStream()->eof()) {
-            $buff = $file->getStream()->read(2048);
+            $buff = $file->getStream()->read(2097152);
             $streamGrid->write($buff);
             $size += $streamGrid->getTransCount();
         }
@@ -232,5 +351,42 @@ class BindataRepo
         }
 
         return true;
+    }
+
+    private function __importCondition($term)
+    {
+        $condition = [];
+        foreach ($term as $field => $conditioner) {
+            foreach ($conditioner as $o => $vl) {
+                if ($o === '$eq') {
+                    // 'limit' => [
+                    //    '$eq' => [
+                    //       40000,
+                    //     ]
+                    //  ],
+                    if (count($vl) > 1)
+                        // equality checks for the values of the same field
+                        // '$eq' => [100, 200, 300]
+                        $condition[$field] = ['$in' => $vl];
+                    else
+                        // '$eq' => [100]
+                        $condition[$field] = current($vl);
+                } elseif ($o === '$gt') {
+                    $condition[$field] = [
+                        '$gt' => $vl,
+                    ];
+                } elseif ($o === '$lt') {
+                    $condition[$field] = [
+                        '$lt' => $vl,
+                    ];
+                } else {
+                    // Condition also can be other embed field condition
+                    $cond = $this->__importCondition([$o => $vl]);
+                    $condition[$field.'.'.$o] = current($cond);
+                }
+            }
+        }
+
+        return $condition;
     }
 }

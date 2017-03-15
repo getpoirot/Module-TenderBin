@@ -2,7 +2,6 @@
 namespace Module\TenderBin\Actions;
 
 use Module\Foundation\Actions\IOC;
-use Module\TenderBin\Exception\exDuplicateEntry;
 use Module\TenderBin\Interfaces\Model\iEntityBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Module\TenderBin\Model\Bindata;
@@ -41,17 +40,6 @@ class CreateBinAction
      */
     function __invoke($binData = null)
     {
-        # Check Whether Bin With Custom Hash Exists?
-
-        if (null !== $customHash = $binData->getIdentifier()) {
-            if (false !== $this->repoBins->findOneByHash($customHash))
-                throw new exDuplicateEntry(sprintf(
-                    'Bindata with Custom Hash (%s) exists.'
-                    , $customHash
-                ), 400);
-        }
-
-
         # Persist Data
 
         $r = $this->repoBins->insert($binData);
@@ -68,14 +56,30 @@ class CreateBinAction
         }
 
         $result = array(
-            'hash'           => (string) $r->getIdentifier(),
-            'title'          => $r->getTitle(),
-            'content_type'   => $r->getMimeType(),
-            'meta'           => \Poirot\Std\cast($r->getMeta())->toArray(function($_, $k) {
-                return substr($k, 0, 2) == '__'; // filter specific options
-            }),
-            'expiration'     => $expiration,
-            'is_protected'   => $r->isProtected(),
+            '$bindata' => [
+                'hash'           => (string) $r->getIdentifier(),
+                'title'          => $r->getTitle(),
+                'content_type'   => $r->getMimeType(),
+                'expiration'     => $expiration,
+                'is_protected'   => $r->isProtected(),
+
+                'meta'           => \Poirot\Std\cast($r->getMeta())->toArray(function($_, $k) {
+                    return substr($k, 0, 2) == '__'; // filter specific options
+                }),
+
+                'version'      => [
+                    'subversion_of' => ($v = $r->getVersion()->getSubversionOf()) ? [
+                        '$bindata' => [
+                            'uid' => ( $v ) ? (string) $v : null,
+                        ],
+                        '_link' => ( $v ) ? (string) IOC::url(
+                            'main/tenderbin/resource/'
+                            , array('resource_hash' => (string) $v)
+                        ) : null,
+                    ] : null,
+                    'tag' => $r->getVersion()->getTag(),
+                ],
+            ],
             '_link'            => (string) IOC::url(
                 'main/tenderbin/resource/'
                 , array('resource_hash' => $r->getIdentifier())
@@ -144,21 +148,22 @@ class CreateBinAction
         if (!isset($data['content']))
             throw new \InvalidArgumentException('Parameter "content" is required.');
 
-        if (!$data['content'] instanceof UploadedFileInterface) {
+        if ($data['content'] instanceof UploadedFileInterface) {
             // Content-Type can be retrieved from uploaded file
-            if (!isset($data['content_type']))
-                throw new \InvalidArgumentException('Parameter "content_type" is required.');
-        } else {
             // File Upload With No Error
             /** @var UploadedFileInterface $file */
             $file = $data['content'];
             if ($file->getError())
                 throw new \RuntimeException('Error Uploading File; The File Not Received.');
+        } else {
+            if (!isset($data['content_type']))
+                throw new \InvalidArgumentException('Parameter "content_type" is required.');
         }
 
         // TODO assert content/type
         // TODO title can be null; it can been retrieved when render requested
 
+        
         # Filter Data
 
         if ( isset($data['timestamp_expiration']) ) {

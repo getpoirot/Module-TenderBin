@@ -50,6 +50,22 @@ return [
                 ],
             ],
 
+            'search' => [
+                'route' => 'RouteSegment',
+                'options' => [
+                    'criteria'    => '/search',
+                    'match_whole' => true,
+                ],
+                'params'  => [
+                    ListenerDispatch::CONF_KEY => [
+                        \Module\TenderBin\Actions\SearchBinAction::functorAssertTokenExists(),
+                        \Module\TenderBin\Actions\SearchBinAction::functorParseOwnerObjectFromToken(),
+                        \Module\TenderBin\Actions\SearchBinAction::functorParseQueryTermFromRequest(),
+                        '/module/tenderbin/actions/searchBinAction',
+                    ],
+                ],
+            ],
+            
             'resource' => [
                 'route' => 'RouteSegment',
                 'options' => [
@@ -95,8 +111,9 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::CONF_KEY => [
-                                \Module\TenderBin\Actions\UpdateBinAction::functorAssertTokenExists(),
-                                \Module\TenderBin\Actions\UpdateBinAction::functorParseOwnerObjectFromToken(),
+                                '/module/tenderbin/actions/findBinAction',
+                                // only owner can update data from bin store
+                                \Module\TenderBin\Actions\UpdateBinAction::functorAssertBinPermissionAccess(true),
                                 \Module\TenderBin\Actions\UpdateBinAction::functorParseUpdateFromRequest(),
                                 '/module/tenderbin/actions/updateBinAction',
                             ],
@@ -111,7 +128,8 @@ return [
                         'params'  => [
                             ListenerDispatch::CONF_KEY => [
                                 '/module/tenderbin/actions/findBinAction',
-                                \Module\TenderBin\Actions\DeleteBinAction::functorAssertBinPermissionAccess(),
+                                // only owner can delete from bin store
+                                \Module\TenderBin\Actions\DeleteBinAction::functorAssertBinPermissionAccess(true),
                                 '/module/tenderbin/actions/deleteBinAction',
                             ],
                         ],
@@ -123,7 +141,7 @@ return [
                             'method' => 'GET',
                         ],
                         'params'  => [
-                            ListenerDispatch::CONF_KEY => function() { kd('GET'); },
+                            ListenerDispatch::CONF_KEY => function() { phpinfo(); },
                         ],
                     ],
                 ],

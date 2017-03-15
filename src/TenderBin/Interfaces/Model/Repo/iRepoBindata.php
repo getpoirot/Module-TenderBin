@@ -18,6 +18,17 @@ interface iRepoBindata
 
 
     /**
+     * Find By Search Term
+     *
+     * @param array  $term
+     * @param string $offset
+     * @param int    $limit
+     * 
+     * @return \Traversable
+     */
+    function find(array $term, $offset = null, $limit = null);
+    
+    /**
      * Persist Bindata
      *
      * - if Bindata entity has no identifier used ::nextIdentifier
@@ -30,6 +41,15 @@ interface iRepoBindata
     function insert(iEntityBindata $entity);
 
     /**
+     * Save Entity By Insert Or Update
+     * 
+     * @param iEntityBindata $entity
+     * 
+     * @return iEntityBindata
+     */
+    function save(iEntityBindata $entity);
+    
+    /**
      * Find Match By Given Hash ID
      *
      * @param string|mixed $hash
@@ -38,6 +58,25 @@ interface iRepoBindata
      */
     function findOneByHash($hash);
 
+    /**
+     * Find All Subversions Of a Bin Entity
+     *
+     * @param string|mixed $hash
+     *
+     * @return \MongoCursor
+     */
+    function findAllSubversionsOf($hash);
+
+    /**
+     * Find Subversion Of an Entity Bin IF Has?
+     * 
+     * @param $hash
+     * @param $tag
+     * 
+     * @return iEntityBindata|false
+     */
+    function findOneTagedSubverOf($hash, $tag);
+    
     /**
      * Delete Bin Data With Given Hash
      * 
