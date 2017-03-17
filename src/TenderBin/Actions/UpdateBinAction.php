@@ -2,7 +2,6 @@
 namespace Module\TenderBin\Actions;
 
 use Module\Foundation\Actions\IOC;
-use Module\TenderBin\Interfaces\Model\iEntityBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Module\TenderBin\Model\Bindata;
 use Module\TenderBin\Model\BindataVersionObject;
@@ -47,15 +46,17 @@ class UpdateBinAction
         {
             // we must duplicate a new version of bindata with new tag
             $updateBin->setIdentifier(null); // let repo assign new identifier
-            $updateBin->setDateCreated(null);
+            $updateBin->setDateCreated(new \DateTime());
 
             $version = new BindataVersionObject;
             $version->setSubversionOf($binData->getIdentifier());
             $version->setTag($updates['version']);
             $updateBin->setVersion($version);
-        }
 
-        (!isset($updates['content']))              ?: $updateBin->setContent($updates['content']);
+            // If Content Changed new Version Tag Must Provided 
+            (!isset($updates['content'])) ?: $updateBin->setContent($updates['content']);
+        }
+        
 
         (!isset($updates['title']))                ?: $updateBin->setTitle($updates['title']);
         (!isset($updates['timestamp_expiration'])) ?: $updateBin->setDatetimeExpiration($updates['timestamp_expiration']);

@@ -75,9 +75,9 @@ class SearchBinAction
                     }),
 
                     'version'      => [
-                        'subversion_of' => ($v = $bin->getVersion()->getSubversionOf()) ? [
+                        'subversion_of' => ($v = (string) $bin->getVersion()->getSubversionOf()) ? [
                             '$bindata' => [
-                                'uid' => ( $v ) ? (string) $v : null,
+                                'uid' => ( $v ) ? $v : null,
                             ],
                             '_link' => ( $v ) ? (string) IOC::url(
                                 'main/tenderbin/resource/'

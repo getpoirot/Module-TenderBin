@@ -82,9 +82,9 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::CONF_KEY => [
-                                '/module/tenderbin/actions/findBinAction',
-                                \Module\TenderBin\Actions\FindBinAction::functorAssertBinPermissionAccess(),
-                                \Module\TenderBin\Actions\FindBinAction::functorResponseGetInfoResult(),
+                                '/module/tenderbin/actions/getMetaBinAction',
+                                \Module\TenderBin\Actions\GetMetaBinAction::functorAssertBinPermissionAccess(),
+                                \Module\TenderBin\Actions\GetMetaBinAction::functorResponseGetInfoResult(),
                             ],
                         ],
                     ],
@@ -96,9 +96,9 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::CONF_KEY => [
-                                '/module/tenderbin/actions/findBinAction',
-                                \Module\TenderBin\Actions\FindBinAction::functorAssertBinPermissionAccess(),
-                                \Module\TenderBin\Actions\FindBinAction::functorResponseHeadInfoResult(),
+                                '/module/tenderbin/actions/getMetaBinAction',
+                                \Module\TenderBin\Actions\GetMetaBinAction::functorAssertBinPermissionAccess(),
+                                \Module\TenderBin\Actions\GetMetaBinAction::functorResponseHeadInfoResult(),
                             ],
                         ],
                     ],
@@ -141,7 +141,11 @@ return [
                             'method' => 'GET',
                         ],
                         'params'  => [
-                            ListenerDispatch::CONF_KEY => function() { phpinfo(); },
+                            ListenerDispatch::CONF_KEY => [
+                                '/module/tenderbin/actions/renderBinAction',
+                                \Module\TenderBin\Actions\RenderBinAction::functorAssertBinPermissionAccess(),
+                                \Module\TenderBin\Actions\RenderBinAction::functorResponseRenderContent(),
+                            ],
                         ],
                     ],
                 ],
