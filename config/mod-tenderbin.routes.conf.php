@@ -18,7 +18,7 @@ return [
                  *    [1] => routes defined callable
                  *     ...
                  */
-                '/module/tenderbin/actions/assertToken',
+                \Module\OAuth2Client\Actions\IOC::bareService()->AssertToken,
             ],
         ],
 
@@ -40,7 +40,7 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::CONF_KEY => [
-                                \Module\TenderBin\Actions\CreateBinAction::functorAssertTokenExists(),
+                                \Module\OAuth2Client\Actions\IOC::functorValidateGivenToken(),
                                 \Module\TenderBin\Actions\CreateBinAction::functorParseOwnerObjectFromToken(),
                                 \Module\TenderBin\Actions\CreateBinAction::functorMakeBindataEntityFromRequest(),
                                 '/module/tenderbin/actions/createBinAction',
@@ -58,7 +58,7 @@ return [
                 ],
                 'params'  => [
                     ListenerDispatch::CONF_KEY => [
-                        \Module\TenderBin\Actions\SearchBinAction::functorAssertTokenExists(),
+                        \Module\OAuth2Client\Actions\IOC::functorValidateGivenToken(),
                         \Module\TenderBin\Actions\SearchBinAction::functorParseOwnerObjectFromToken(),
                         \Module\TenderBin\Actions\SearchBinAction::functorParseQueryTermFromRequest(),
                         '/module/tenderbin/actions/searchBinAction',

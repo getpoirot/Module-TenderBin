@@ -45,6 +45,10 @@ class Module implements Sapi\iSapiModule
         if (!$moduleManager->hasLoaded('MongoDriver'))
             // MongoDriver Module Is Required.
             $moduleManager->loadModule('MongoDriver');
+
+        if (!$moduleManager->hasLoaded('OAuth2Client'))
+            // Load OAuth2 Client To Assert Tokens.
+            $moduleManager->loadModule('OAuth2Client');
     }
 
     /**

@@ -17,25 +17,6 @@ abstract class aAction
     // Action Chain Helpers:
 
     /**
-     * Assert Token In Actions that need token is valid
-     *
-     * @return \Closure
-     */
-    static function functorAssertTokenExists()
-    {
-        /**
-         * @param null|iEntityAccessToken $token
-         */
-        return function ($token = null) {
-            if (!$token instanceof iEntityAccessToken)
-                throw new exAccessDenied('Token is revoked or mismatch.');
-
-
-            // let it play!!
-        };
-    }
-
-    /**
      * Parse Owner Identifier Object from given Token Assertion
      *
      * @return \Closure
@@ -77,7 +58,7 @@ abstract class aAction
          * @param iEntityAccessToken $token
          * @return array
          */
-        return function ($binData = null, $token = null) use ($forceCheckPermission)
+        return function ($binData = null, iEntityAccessToken $token = null) use ($forceCheckPermission)
         {
             if (!$binData instanceof iEntityBindata)
                 throw new \RuntimeException(sprintf(

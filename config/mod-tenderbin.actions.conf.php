@@ -7,8 +7,6 @@ use Poirot\Ioc\Container\BuildContainer;
 
 return array(
     'services' => array(
-        // assertToken(iHttpRequest $request)
-        \Module\TenderBin\Actions\ServiceAssertTokenAction::class,
         'findBinAction'    => \Module\TenderBin\Actions\FindBinAction::class,
         'renderBinAction'  => \Module\TenderBin\Actions\RenderBinAction::class,
         'createBinAction'  => \Module\TenderBin\Actions\CreateBinAction::class,

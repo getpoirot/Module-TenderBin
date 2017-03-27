@@ -1,23 +1,15 @@
 <?php
-use Module\TenderBin\Actions\ServiceAssertTokenAction;
+use Module\OAuth2Client\Actions\ServiceAssertTokenAction;
 
 return [
-    \Module\TenderBin\Module::CONF_KEY => [
-        ServiceAssertTokenAction::CONF_KEY => [
-            /*
-            'debug_mode' => [
-                // Not Connect to OAuth Server and Used Asserted Token With OwnerObject Below 
-                'enabled' => filter_var(getenv('OAUTH_DEBUG_MODE'), FILTER_VALIDATE_BOOLEAN),
-                'owner_identifier' => new \Module\TenderBin\Model\BindataOwnerObject([
-                    'realm' => 'test',
-                ]),
-            ],
-            */
-            'oauth_server' => [
-                'token_endpoint' => '',
-                'authorization'  => '',
-            ],
-        ],
+
+    ## ----------------------------------- ##
+    ## OAuth2Client Module Must Configured ##
+    ## to assert tokens ...                ##
+    ## ----------------------------------- ##
+
+    \Module\OAuth2Client\Module::CONF_KEY => [
+        // Configure module ....
     ],
 
 
