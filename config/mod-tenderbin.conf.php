@@ -17,7 +17,7 @@ return [
 
     Module\MongoDriver\Module::CONF_KEY =>
     [
-        \Module\MongoDriver\Services\aServiceRepository::CONF_KEY =>
+        \Module\MongoDriver\Services\aServiceRepository::CONF_REPOSITORIES =>
         [
             \Module\TenderBin\Model\Mongo\BindataRepoService::class => [
 

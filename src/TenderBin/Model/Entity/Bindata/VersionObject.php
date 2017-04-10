@@ -1,12 +1,12 @@
 <?php
-namespace Module\TenderBin\Model;
+namespace Module\TenderBin\Model\Entity\Bindata;
 
+use Module\MongoDriver\Model\aObject;
 use Module\TenderBin\Interfaces\Model\BinData\iObjectVersion;
-use Poirot\Std\Struct\aDataOptions;
 
 
-class BindataVersionObject
-     extends aDataOptions
+class VersionObject
+     extends aObject
     implements iObjectVersion
 {
     /** @var mixed Determine this entity is subversion of this parent */

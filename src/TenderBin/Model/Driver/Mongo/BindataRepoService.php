@@ -16,12 +16,13 @@ class BindataRepoService
     /**
      * Return new instance of Repository
      *
-     * @param \MongoDB\Database $mongoDb
-     * @param string            $collection
+     * @param \MongoDB\Database  $mongoDb
+     * @param string             $collection
+     * @param string|object|null $persistable
      *
      * @return BindataRepo
      */
-    function newRepoInstance($mongoDb, $collection)
+    function newRepoInstance($mongoDb, $collection, $persistable = null)
     {
         $repo = new BindataRepo($mongoDb, $collection);
         if ($hasIdGenerator = $this->_getConf(self::CONF_GENERATOR_KEY))

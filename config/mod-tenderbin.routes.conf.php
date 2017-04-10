@@ -40,7 +40,7 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::CONF_KEY => [
-                                \Module\OAuth2Client\Actions\IOC::functorValidateGivenToken(),
+                                \Module\TenderBin\Actions\IOC::bareService()->createBinAction,
                                 \Module\TenderBin\Actions\CreateBinAction::functorParseOwnerObjectFromToken(),
                                 \Module\TenderBin\Actions\CreateBinAction::functorMakeBindataEntityFromRequest(),
                                 '/module/tenderbin/actions/createBinAction',
@@ -58,7 +58,6 @@ return [
                 ],
                 'params'  => [
                     ListenerDispatch::CONF_KEY => [
-                        \Module\OAuth2Client\Actions\IOC::functorValidateGivenToken(),
                         \Module\TenderBin\Actions\SearchBinAction::functorParseOwnerObjectFromToken(),
                         \Module\TenderBin\Actions\SearchBinAction::functorParseQueryTermFromRequest(),
                         '/module/tenderbin/actions/searchBinAction',

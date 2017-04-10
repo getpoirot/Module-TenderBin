@@ -1,14 +1,12 @@
 <?php
 namespace Module\TenderBin\Actions;
 
+use Module\TenderBin\Model\Entity;
 use Module\Foundation\Actions\IOC;
-use Module\TenderBin\Interfaces\Model\iEntityBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
-use Module\TenderBin\Model\Bindata;
-use Module\TenderBin\Model\BindataOwnerObject;
 use Poirot\Application\Sapi\Server\Http\ListenerDispatch;
-use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
 use Poirot\Http\Interfaces\iHttpRequest;
+use Poirot\OAuth2\Interfaces\Server\Repository\iEntityAccessToken;
 use Psr\Http\Message\UploadedFileInterface;
 
 
@@ -22,10 +20,13 @@ class CreateBinAction
     /**
      * ValidatePage constructor.
      *
+     * @param iHttpRequest $request  @IoC /
      * @param iRepoBindata $repoBins @IoC /module/tenderbin/services/repository/Bindata
      */
-    function __construct(iRepoBindata $repoBins)
+    function __construct(iHttpRequest $request, iRepoBindata $repoBins)
     {
+        parent::__construct($request);
+
         $this->repoBins = $repoBins;
     }
 
@@ -33,16 +34,41 @@ class CreateBinAction
     /**
      * Create New Bin and Persist
      *
-     * @param iEntityBindata $binData
+     * @param string                  $custom_uid
+     * @param iEntityAccessToken|null $token
      *
      * @return array
      * @throws \Exception
      */
-    function __invoke($binData = null)
+    function __invoke($custom_uid = null, iEntityAccessToken $token = null)
     {
-        # Persist Data
+        # Assert Token
+        $this->assertTokenByOwnerAndScope($token);
 
-        $r = $this->repoBins->insert($binData);
+
+        # Create Post Entity From Http Request
+        $hydrateBindata = new Entity\HydrateBindata(
+            Entity\HydrateBindata::parseWith($this->request) );
+
+        try
+        {
+            $entityBindata  = new Entity\Bindata($hydrateBindata);
+            // Determine Owner Identifier From Token
+            $entityBindata->setOwnerIdentifier( \Module\TenderBin\buildOwnerObjectFromToken($token) );
+            // Set Custom Object Identifier if it given.
+            $entityBindata->setIdentifier($custom_uid);
+
+            // TODO Assert Validate Entity
+
+        } catch (\InvalidArgumentException $e)
+        {
+            // TODO Handle Validation ...
+            throw $e;
+        }
+
+
+        # Persist Data
+        $r = $this->repoBins->insert($entityBindata);
 
 
         # Build Response
@@ -94,52 +120,6 @@ class CreateBinAction
 
     // Action Chain Helpers:
 
-    /**
-     * Parse Create Bin Data Parameters From Http Request
-     *
-     * @return callable
-     */
-    static function functorMakeBindataEntityFromRequest()
-    {
-        /**
-         * @param iHttpRequest       $request
-         * @param BindataOwnerObject $ownerObject
-         * @param string             $custom_uid
-         *
-         * @return array [iEntityBindata 'binData']
-         */
-        return function ($request = null, $ownerObject = null, $custom_uid = null) {
-            if (!$request instanceof iHttpRequest)
-                throw new \RuntimeException('Cant attain Http Request Object.');
-
-
-            # Parse and assert Http Request
-            $_post = ParseRequestData::_($request)->parseBody();
-            $_post = self::_assertInputData($_post);
-
-
-            # Create BinData Entity From Parsed Request Params
-            $binData = new Bindata;
-            $binData->setTitle($_post['title']);
-            $binData->setContent($_post['content']);
-            $binData->setOwnerIdentifier($ownerObject);
-
-            (!isset($_post['content_type']))         ?: $binData->setMimeType($_post['content_type']);
-            (!isset($_post['meta']))                 ?: $binData->setMeta($_post['meta']);
-            (!isset($_post['protected']))            ?: $binData->setProtected($_post['protected']);
-            (!isset($_post['timestamp_expiration'])) ?: $binData->setDatetimeExpiration($_post['timestamp_expiration']);
-
-            if ($custom_uid !== null)
-                // Set Custom Object Identifier if it given.
-                $binData->setIdentifier($custom_uid);
-
-
-            # Return to next chain as 'binData' argument
-            return ['binData' => $binData];
-        };
-    }
-
-
     protected static function _assertInputData(array $data)
     {
         # Validate Data
@@ -163,23 +143,6 @@ class CreateBinAction
         // TODO assert content/type
         // TODO title can be null; it can been retrieved when render requested
 
-        
-        # Filter Data
-
-        if ( isset($data['timestamp_expiration']) ) {
-            if ($data['timestamp_expiration'] == '0') {
-                // Consider infinite
-                unset($data['timestamp_expiration']);
-            } else {
-                $dtStr = date("c", $data['timestamp_expiration']);
-                $d = new \DateTime($dtStr);
-                $data['timestamp_expiration'] = $d;
-            }
-        }
-
-        if (isset($data['protected']))
-            // Returns TRUE for "1", "true", "on" and "yes". Returns FALSE otherwise.
-            $data['protected'] = filter_var($data['protected'], FILTER_VALIDATE_BOOLEAN);
 
         return $data;
     }

@@ -1,9 +1,11 @@
 <?php
-namespace Module\TenderBin\Model;
+namespace Module\TenderBin\Model\Entity;
 
 
 use Module\TenderBin\Interfaces\Model\BinData\iObjectVersion;
 use Module\TenderBin\Interfaces\Model\iEntityBindata;
+use Module\TenderBin\Model\Entity\Bindata\OwnerObject;
+use Module\TenderBin\Model\Entity\Bindata\VersionObject;
 use Poirot\Std\Interfaces\Struct\iData;
 use Poirot\Std\Struct\DataEntity;
 use Poirot\Std\Struct\DataOptionsOpen;
@@ -151,11 +153,11 @@ class Bindata
     /**
      * Set Owner
      *
-     * @param BindataOwnerObject $ownerUID
+     * @param OwnerObject $ownerUID
      *
      * @return $this
      */
-    function setOwnerIdentifier(BindataOwnerObject $ownerUID)
+    function setOwnerIdentifier(OwnerObject $ownerUID)
     {
         $this->ownerIdentifier = $ownerUID;
         return $this;
@@ -267,7 +269,7 @@ class Bindata
     function getVersion()
     {
         if (!$this->version)
-            $this->setVersion(new BindataVersionObject);
+            $this->setVersion(new VersionObject);
         
         return $this->version;
     }
