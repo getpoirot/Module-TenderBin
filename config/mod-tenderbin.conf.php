@@ -19,7 +19,7 @@ return [
     [
         \Module\MongoDriver\Services\aServiceRepository::CONF_REPOSITORIES =>
         [
-            \Module\TenderBin\Model\Mongo\BindataRepoService::class => [
+            \Module\TenderBin\Model\Driver\Mongo\BindataRepoService::class => [
 
                 // Generate Unique ID While Persis Bin Data
                 // with different situation we need vary id generated;
@@ -27,7 +27,7 @@ return [
                 // but consider when we store lots of files
                 'unique_id_generator' => function($id = null, $self = null)
                 {
-                    /** @var $self \Module\TenderBin\Model\Mongo\BindataRepo */
+                    /** @var $self \Module\TenderBin\Model\Driver\Mongo\BindataRepo */
                     // note: currently generated hash allows 14,776,336 unique entry
                     do {
                         $id = \Poirot\Std\generateShuffleCode(4, \Poirot\Std\CODE_NUMBERS | \Poirot\Std\CODE_STRINGS);

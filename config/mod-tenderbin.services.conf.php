@@ -16,7 +16,7 @@ return [
             // Define Default Services
             'services' =>
             [
-                \Module\TenderBin\Model\Mongo\BindataRepoService::class,
+                \Module\TenderBin\Model\Driver\Mongo\BindataRepoService::class,
             ],
         ],
     ],

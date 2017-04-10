@@ -28,7 +28,7 @@ return [
             'create' => [
                 'route' => 'RouteSegment',
                 'options' => [
-                    'criteria'    => '[/:custom_uid{\w+}]',
+                    'criteria'    => '[/:custom_uid{{\w+}}]',
                     'match_whole' => true,
                 ],
                 'routes' => [
@@ -41,9 +41,6 @@ return [
                         'params'  => [
                             ListenerDispatch::CONF_KEY => [
                                 \Module\TenderBin\Actions\IOC::bareService()->createBinAction,
-                                \Module\TenderBin\Actions\CreateBinAction::functorParseOwnerObjectFromToken(),
-                                \Module\TenderBin\Actions\CreateBinAction::functorMakeBindataEntityFromRequest(),
-                                '/module/tenderbin/actions/createBinAction',
                             ],
                         ],
                     ],
@@ -58,7 +55,7 @@ return [
                 ],
                 'params'  => [
                     ListenerDispatch::CONF_KEY => [
-                        \Module\TenderBin\Actions\SearchBinAction::functorParseOwnerObjectFromToken(),
+//                        \Module\TenderBin\Actions\SearchBinAction::functorParseOwnerObjectFromToken(),
                         \Module\TenderBin\Actions\SearchBinAction::functorParseQueryTermFromRequest(),
                         '/module/tenderbin/actions/searchBinAction',
                     ],
@@ -68,7 +65,7 @@ return [
             'resource' => [
                 'route' => 'RouteSegment',
                 'options' => [
-                    'criteria'    => '/:resource_hash{\w+}',
+                    'criteria'    => '/:resource_hash{{\w+}}',
                     'match_whole' => false, // exactly match with this not trailing paths
                 ],
                 'routes' => [

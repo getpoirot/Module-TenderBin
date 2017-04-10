@@ -17,7 +17,7 @@ abstract class aAction
     /** @var iHttpRequest */
     protected $request;
 
-    protected $tokenMustHaveOwner  = true;
+    protected $tokenMustHaveOwner  = false;
     protected $tokenMustHaveScopes = array(
 
     );
@@ -49,6 +49,7 @@ abstract class aAction
         );
 
     }
+
 
     // Action Chain Helpers:
 

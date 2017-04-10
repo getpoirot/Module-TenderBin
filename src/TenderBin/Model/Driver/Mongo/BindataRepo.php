@@ -1,18 +1,15 @@
 <?php
-namespace Module\TenderBin\Model\Mongo;
+namespace Module\TenderBin\Model\Driver\Mongo;
 
+use Module\TenderBin\Model\Driver\Mongo;
 use Module\TenderBin\Exception\exDuplicateEntry;
 use Module\TenderBin\Interfaces\DownloadFileInterface;
-use Module\TenderBin\Model\Bindata;
-use Module\TenderBin\Model\Mongo;
 use Module\MongoDriver\Model\Repository\aRepository;
-
 use Module\TenderBin\Interfaces\Model\iEntityBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Module\TenderBin\Storage\DownloadFile;
 use MongoDB\BSON\ObjectID;
 use MongoDB\GridFS\Exception\FileNotFoundException;
-use Poirot\Psr7\UploadedFile;
 use Poirot\Stream\ResourceStream;
 use Poirot\Stream\Streamable;
 use Psr\Http\Message\UploadedFileInterface;

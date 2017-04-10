@@ -259,6 +259,9 @@ class HydrateBindata
      */
     public function getIterator()
     {
-        return new HydrateGetters($this);
+        $hydrator = new HydrateGetters($this);
+        $hydrator->setExcludeNullValues();
+
+        return $hydrator;
     }
 }

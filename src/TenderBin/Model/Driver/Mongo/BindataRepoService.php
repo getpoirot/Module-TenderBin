@@ -1,5 +1,5 @@
 <?php
-namespace Module\TenderBin\Model\Mongo;
+namespace Module\TenderBin\Model\Driver\Mongo;
 
 use Module\MongoDriver\Services\aServiceRepository;
 

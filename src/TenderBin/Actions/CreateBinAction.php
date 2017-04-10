@@ -7,7 +7,7 @@ use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Poirot\Application\Sapi\Server\Http\ListenerDispatch;
 use Poirot\Http\Interfaces\iHttpRequest;
 use Poirot\OAuth2\Interfaces\Server\Repository\iEntityAccessToken;
-use Psr\Http\Message\UploadedFileInterface;
+use Poirot\Std\Exceptions\exUnexpectedValue;
 
 
 class CreateBinAction
@@ -58,9 +58,9 @@ class CreateBinAction
             // Set Custom Object Identifier if it given.
             $entityBindata->setIdentifier($custom_uid);
 
-            // TODO Assert Validate Entity
+            __(new Entity\ValidateBindata($entityBindata))->assertValidate();
 
-        } catch (\InvalidArgumentException $e)
+        } catch (exUnexpectedValue $e)
         {
             // TODO Handle Validation ...
             throw $e;
@@ -82,7 +82,7 @@ class CreateBinAction
         }
 
         $result = array(
-            '$bindata' => [
+            'bindata' => [
                 'hash'           => (string) $r->getIdentifier(),
                 'title'          => $r->getTitle(),
                 'content_type'   => $r->getMimeType(),
@@ -95,7 +95,7 @@ class CreateBinAction
 
                 'version'      => [
                     'subversion_of' => ($v = $r->getVersion()->getSubversionOf()) ? [
-                        '$bindata' => [
+                        'bindata' => [
                             'uid' => ( $v ) ? (string) $v : null,
                         ],
                         '_link' => ( $v ) ? (string) IOC::url(
@@ -117,33 +117,4 @@ class CreateBinAction
         );
     }
 
-
-    // Action Chain Helpers:
-
-    protected static function _assertInputData(array $data)
-    {
-        # Validate Data
-        // TODO meta data start with >__< are reserved and cant be applied 
-        
-        if (!isset($data['content']))
-            throw new \InvalidArgumentException('Parameter "content" is required.');
-
-        if ($data['content'] instanceof UploadedFileInterface) {
-            // Content-Type can be retrieved from uploaded file
-            // File Upload With No Error
-            /** @var UploadedFileInterface $file */
-            $file = $data['content'];
-            if ($file->getError())
-                throw new \RuntimeException('Error Uploading File; The File Not Received.');
-        } else {
-            if (!isset($data['content_type']))
-                throw new \InvalidArgumentException('Parameter "content_type" is required.');
-        }
-
-        // TODO assert content/type
-        // TODO title can be null; it can been retrieved when render requested
-
-
-        return $data;
-    }
 }

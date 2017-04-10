@@ -1,18 +1,18 @@
 <?php
-namespace Module\TenderBin\Model\Mongo;
+namespace Module\TenderBin\Model\Driver\Mongo;
 
 
 use Module\TenderBin\Interfaces\Model\iEntityBindata;
 
 use Module\MongoDriver\Model\tPersistable;
-use Module\TenderBin\Model\BindataOwnerObject;
-use Module\TenderBin\Model\BindataVersionObject;
+use Module\TenderBin\Model\Entity\Bindata\OwnerObject;
+use Module\TenderBin\Model\Entity\Bindata\VersionObject;
 use MongoDB\BSON\Persistable;
 use MongoDB\BSON\UTCDatetime;
 
 
 class Bindata
-    extends \Module\TenderBin\Model\Bindata
+    extends \Module\TenderBin\Model\Entity\Bindata
     implements iEntityBindata
     , Persistable
 {
@@ -155,11 +155,11 @@ class Bindata
     {
         if (isset($data['owner_identifier']))
             // Unserialize BsonDocument to Required BindataOwnerObject from Persistence
-            $data['owner_identifier'] = new BindataOwnerObject($data['owner_identifier']);
+            $data['owner_identifier'] = new OwnerObject($data['owner_identifier']);
 
         if (isset($data['version']))
             // Unserialize BsonDocument to Required VersionObject from Persistence
-            $data['version'] = new BindataVersionObject($data['version']);
+            $data['version'] = new VersionObject($data['version']);
 
         $this->import($data);
     }
