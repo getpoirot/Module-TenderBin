@@ -1,11 +1,12 @@
 <?php
 namespace Module\TenderBin\Model\Driver\Mongo;
 
+use Module\TenderBin\Model\Entity;
 use Module\TenderBin\Model\Driver\Mongo;
 use Module\TenderBin\Exception\exDuplicateEntry;
 use Module\TenderBin\Interfaces\DownloadFileInterface;
 use Module\MongoDriver\Model\Repository\aRepository;
-use Module\TenderBin\Interfaces\Model\iEntityBindata;
+use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Module\TenderBin\Storage\DownloadFile;
 use MongoDB\BSON\ObjectID;
@@ -14,6 +15,9 @@ use Poirot\Stream\ResourceStream;
 use Poirot\Stream\Streamable;
 use Psr\Http\Message\UploadedFileInterface;
 
+// TODO return entity object instead of persistence entity
+//      use protected method to interchange these two types between each other
+//      also when persist we can not ignore some fields and when retrieve it the orig fields included
 
 class BindataRepo
     extends aRepository
@@ -29,7 +33,7 @@ class BindataRepo
      */
     protected function __init()
     {
-        $this->setModelPersist(new Mongo\Bindata);
+        $this->setModelPersist(new Mongo\BindataEntity);
     }
 
     /**
@@ -39,6 +43,7 @@ class BindataRepo
      * @param null|string $id
      *
      * @return mixed
+     * @throws \Exception
      */
     function genNextIdentifier($id = null)
     {
@@ -46,7 +51,13 @@ class BindataRepo
             // Generator will build ID
             return call_user_func($this->_functorIDGenerator, $id, $this);
 
-        return ($id !== null) ? new ObjectID( (string)$id ) : new ObjectID;
+        try {
+            $objectId = ($id !== null) ? new ObjectID( (string)$id ) : new ObjectID;
+        } catch (\Exception $e) {
+            throw new \Exception(sprintf('Invalid Persist (%s) Id is Given.', $id));
+        }
+
+        return $objectId;
     }
     
     /**
@@ -81,11 +92,11 @@ class BindataRepo
      * - if the entity is subversion then old version for this entity exists must be deleted
      *   and replaced with this one
      *
-     * @param iEntityBindata $entity
+     * @param iBindata $entity
      *
-     * @return iEntityBindata Contains inserted uid
+     * @return iBindata Contains inserted uid
      */
-    function insert(iEntityBindata $entity)
+    function insert(iBindata $entity)
     {
         $givenIdentifier = $entity->getIdentifier();
         if ($givenIdentifier && false !== $this->findOneByHash($givenIdentifier))
@@ -102,7 +113,7 @@ class BindataRepo
             $dateCreated = new \DateTime();
         
         # Convert given entity to Persistence Entity Object To Insert
-        $binData = new Mongo\Bindata;
+        $binData = new Mongo\BindataEntity;
         $binData
             ->setIdentifier($givenIdentifier)
             ->setTitle($entity->getTitle())
@@ -139,18 +150,21 @@ class BindataRepo
 
 
         # Give back entity with given id and meta record info
+
         $binData->setIdentifier($givenIdentifier);
         return $binData;
     }
 
     /**
+     * // TODO improve update by not have to delete old one and insert again
+     *
      * Save Entity By Insert Or Update
      *
-     * @param iEntityBindata $entity
+     * @param iBindata $entity
      *
      * @return mixed
      */
-    function save(iEntityBindata $entity)
+    function save(iBindata $entity)
     {
         $updateFlag = false;
         if ($entity->getIdentifier())
@@ -195,11 +209,11 @@ class BindataRepo
      *
      * @param string|mixed $hash
      *
-     * @return iEntityBindata|false
+     * @return iBindata|false
      */
     function findOneByHash($hash)
     {
-        /** @var iEntityBindata $r */
+        /** @var iBindata $r */
         $r = $this->_query()->findOne([
             '_id' => $this->genNextIdentifier($hash),
         ]);
@@ -212,7 +226,23 @@ class BindataRepo
             // Retrieve File From Storage
             $r = $this->_storeRetriveAndInjectFile($r);
 
-        return $r;
+
+        # Convert Persist entity to Entity Object
+        $binData = new Entity\BindataEntity;
+        $binData
+            ->setIdentifier($r->getIdentifier())
+            ->setTitle($r->getTitle())
+            ->setVersion($r->getVersion())
+            ->setMeta($r->getMeta())
+            ->setContent($r->getContent())
+            ->setMimeType($r->getMimeType())
+            ->setOwnerIdentifier($r->getOwnerIdentifier())
+            ->setDatetimeExpiration($r->getDatetimeExpiration())
+            ->setDateCreated($r->getDateCreated())
+            ->setProtected($r->isProtected())
+        ;
+
+        return $binData;
     }
 
     /**
@@ -220,21 +250,31 @@ class BindataRepo
      *
      * - exclude content from retrieved bins
      *
-     * @param array  $term
+     * @param array  $expression
      * @param string $offset
      * @param int    $limit
      *
      * @return \Traversable
      */
-    function find(array $term, $offset = null, $limit = null)
+    function find(array $expression, $offset = null, $limit = null)
     {
         # search term to mongo condition
-        $condition = $this->__importCondition($term);
+        $condition = \Module\MongoDriver\buildMongoConditionFromExpression($expression);
+
+        if ($offset)
+            $condition = [
+                '_id' => [
+                    '$lt' => $this->genNextIdentifier($offset),
+                ]
+            ] + $condition;
+
         $r = $this->_query()->find(
             $condition
             , [
-                'skip' => $offset,
                 'limit' => $limit,
+                'sort'  => [
+                    '_id' => -1,
+                ],
                 'projection' => [
                     '_id'   => true,
                     'title' => true,
@@ -264,7 +304,7 @@ class BindataRepo
         $hash = $this->genNextIdentifier($hash);
         
         # Find and delete object
-        /** @var iEntityBindata $r */
+        /** @var iBindata $r */
         $r = $this->_query()->findOneAndDelete([
             '_id' => $hash,
         ]);
@@ -277,7 +317,7 @@ class BindataRepo
 
         # Delete Tagged Versions
         $subVers = $this->findAllSubversionsOf($hash);
-        /** @var iEntityBindata $v */
+        /** @var iBindata $v */
         foreach ($subVers as $v)
             $this->deleteOneByHash($v->getIdentifier());
         
@@ -306,7 +346,7 @@ class BindataRepo
      * @param $hash
      * @param $tag
      *
-     * @return iEntityBindata|false
+     * @return iBindata|false
      */
     function findOneTagedSubverOf($hash, $tag)
     {
@@ -328,7 +368,10 @@ class BindataRepo
         return $r;
     }
 
-    function storage(Bindata $bindata)
+
+    // ...
+
+    function storage(BindataEntity $bindata)
     {
         // TODO all storage interface through this proxy call
         
@@ -336,48 +379,10 @@ class BindataRepo
         return $this->_storeRetriveAndInjectFile($bindata);
     }
     
-    
-    private function __importCondition($term)
-    {
-        $condition = [];
-        foreach ($term as $field => $conditioner) {
-            foreach ($conditioner as $o => $vl) {
-                if ($o === '$eq') {
-                    // 'limit' => [
-                    //    '$eq' => [
-                    //       40000,
-                    //     ]
-                    //  ],
-                    if (count($vl) > 1)
-                        // equality checks for the values of the same field
-                        // '$eq' => [100, 200, 300]
-                        $condition[$field] = ['$in' => $vl];
-                    else
-                        // '$eq' => [100]
-                        $condition[$field] = current($vl);
-                } elseif ($o === '$gt') {
-                    $condition[$field] = [
-                        '$gt' => $vl,
-                    ];
-                } elseif ($o === '$lt') {
-                    $condition[$field] = [
-                        '$lt' => $vl,
-                    ];
-                } else {
-                    // Condition also can be other embed field condition
-                    $cond = $this->__importCondition([$o => $vl]);
-                    $condition[$field.'.'.$o] = current($cond);
-                }
-            }
-        }
-
-        return $condition;
-    }
-
 
     // Storage:
 
-    protected function _storeSaveBinDataFile(Bindata $binData)
+    protected function _storeSaveBinDataFile(BindataEntity $binData)
     {
         /** @var UploadedFileInterface $file */
         $file = $binData->getContent();
@@ -429,7 +434,7 @@ class BindataRepo
         return $binData;
     }
 
-    protected function _storeDeleteAssociatedFile(Bindata $binData)
+    protected function _storeDeleteAssociatedFile(BindataEntity $binData)
     {
         $gridFS  = $this->gateway->selectGridFSBucket();
         
@@ -464,10 +469,10 @@ class BindataRepo
     }
 
     /**
-     * @return iEntityBindata
+     * @return iBindata
      * @throws \Exception
      */
-    private function _storeRetriveAndInjectFile(Bindata $binData)
+    private function _storeRetriveAndInjectFile(BindataEntity $binData)
     {
         if (!$this->_storeIsFile($binData))
             throw new \InvalidArgumentException('Associated BinData is not a file.');
@@ -508,7 +513,7 @@ class BindataRepo
         return $binData;
     }
 
-    private function _storeIsFile(Bindata $binData)
+    private function _storeIsFile(BindataEntity $binData)
     {
         return ( $binData->getMeta()->has('is_file') );
     }

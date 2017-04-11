@@ -47,18 +47,18 @@ class CreateBinAction
 
 
         # Create Post Entity From Http Request
-        $hydrateBindata = new Entity\HydrateBindata(
-            Entity\HydrateBindata::parseWith($this->request) );
+        $hydrateBindata = new Entity\BindataHydrate(
+            Entity\BindataHydrate::parseWith($this->request) );
 
         try
         {
-            $entityBindata  = new Entity\Bindata($hydrateBindata);
+            $entityBindata  = new Entity\BindataEntity($hydrateBindata);
             // Determine Owner Identifier From Token
             $entityBindata->setOwnerIdentifier( \Module\TenderBin\buildOwnerObjectFromToken($token) );
             // Set Custom Object Identifier if it given.
             $entityBindata->setIdentifier($custom_uid);
 
-            __(new Entity\ValidateBindata($entityBindata))->assertValidate();
+            __(new Entity\BindataValidate($entityBindata))->assertValidate();
 
         } catch (exUnexpectedValue $e)
         {

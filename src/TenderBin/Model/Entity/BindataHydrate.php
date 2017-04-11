@@ -2,7 +2,8 @@
 namespace Module\TenderBin\Model\Entity;
 
 use Module\TenderBin\Interfaces\Model\BinData\iObjectVersion;
-use Module\TenderBin\Interfaces\Model\iEntityBindata;
+use Module\TenderBin\Interfaces\Model\iBindata;
+use Module\TenderBin\Model\Entity\Bindata\VersionObject;
 use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
 use Poirot\Http\Interfaces\iHttpRequest;
 use Poirot\Std\ConfigurableSetter;
@@ -13,10 +14,10 @@ use Psr\Http\Message\UploadedFileInterface;
  * Use To Hydrate Bindata Entity From Http Request
  *
  */
-class HydrateBindata
+class BindataHydrate
     extends ConfigurableSetter
     implements \IteratorAggregate
-    , iEntityBindata
+    , iBindata
 {
     const FIELD_TITLE        = 'title';
     const FIELD_CONTENT      = 'content';
@@ -24,6 +25,7 @@ class HydrateBindata
     const FIELD_META         = 'meta';
     const FIELD_PROTECTED    = 'protected';
     const FIELD_EXPIRATION   = 'expiration';
+    const FIELD_VERSION      = 'version';
 
     protected $title;
     protected $content;
@@ -31,9 +33,11 @@ class HydrateBindata
     protected $meta;
     protected $protected;
     protected $expiration;
+    protected $version;
 
 
     /**
+     * // TODO meta with [prefix __, is_file, filesize] is system prefixed and not allowed
      * Construct
      *
      * @param array|\Traversable $options
@@ -78,6 +82,11 @@ class HydrateBindata
     function setExpiration($expiration)
     {
         $this->expiration = $expiration;
+    }
+
+    function setVersion($version)
+    {
+        $this->version = $version;
     }
 
 
@@ -200,7 +209,15 @@ class HydrateBindata
      */
     function getVersion()
     {
-        // Not Implemented
+        if ($this->version !== null && !$this->version instanceof iObjectVersion)
+        {
+            $version = new VersionObject;
+            $version->setTag( (string) $this->version );
+
+            $this->setVersion($version);
+        }
+
+        return $this->version;
     }
 
 

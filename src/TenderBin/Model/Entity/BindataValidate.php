@@ -1,21 +1,21 @@
 <?php
 namespace Module\TenderBin\Model\Entity;
 
-use Module\TenderBin\Interfaces\Model\iEntityBindata;
+use Module\TenderBin\Interfaces\Model\iBindata;
 use Poirot\Std\Exceptions\exUnexpectedValue;
 use Psr\Http\Message\UploadedFileInterface;
 
 
-class ValidateBindata
+class BindataValidate
 {
     protected $entity;
 
 
     /**
      * Construct
-     * @param iEntityBindata $entity
+     * @param iBindata $entity
      */
-    function __construct(iEntityBindata $entity = null)
+    function __construct(iBindata $entity = null)
     {
         $this->entity = $entity;
     }
@@ -34,6 +34,11 @@ class ValidateBindata
 
         if (!$content)
             $exceptions[] = new exUnexpectedValue('Parameter %s is required.', 'content');
+        else {
+            // Content Must Provide With Version Tag
+            if (null === $this->entity->getVersion())
+                $exceptions[] = new exUnexpectedValue('Parameter %s is required in combination with content.', 'version');
+        }
 
         if ($content instanceof UploadedFileInterface) {
             // Content-Type can be retrieved from uploaded file

@@ -3,7 +3,7 @@ namespace Module\TenderBin\Model\Entity;
 
 
 use Module\TenderBin\Interfaces\Model\BinData\iObjectVersion;
-use Module\TenderBin\Interfaces\Model\iEntityBindata;
+use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Model\Entity\Bindata\OwnerObject;
 use Module\TenderBin\Model\Entity\Bindata\VersionObject;
 use Poirot\Std\Interfaces\Struct\iData;
@@ -12,9 +12,9 @@ use Poirot\Std\Struct\DataOptionsOpen;
 use Psr\Http\Message\UploadedFileInterface;
 
 
-class Bindata
+class BindataEntity
     extends DataOptionsOpen
-    implements iEntityBindata
+    implements iBindata
 {
     protected $identifier;
     protected $title;

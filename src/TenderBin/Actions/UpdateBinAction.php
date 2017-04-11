@@ -1,13 +1,15 @@
 <?php
 namespace Module\TenderBin\Actions;
 
+use Module\TenderBin\Model\Entity;
 use Module\Foundation\Actions\IOC;
+use Module\TenderBin\Exception\exResourceNotFound;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
-use Module\TenderBin\Model\Bindata;
-use Module\TenderBin\Model\BindataVersionObject;
 use Poirot\Application\Sapi\Server\Http\ListenerDispatch;
 use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
 use Poirot\Http\Interfaces\iHttpRequest;
+use Poirot\OAuth2\Interfaces\Server\Repository\iEntityAccessToken;
+use Poirot\Std\Exceptions\exUnexpectedValue;
 
 
 class UpdateBinAction
@@ -20,57 +22,95 @@ class UpdateBinAction
     /**
      * ValidatePage constructor.
      *
+     * @param iHttpRequest $request  @IoC /
      * @param iRepoBindata $repoBins @IoC /module/tenderbin/services/repository/Bindata
      */
-    function __construct(iRepoBindata $repoBins)
+    function __construct(iHttpRequest $request, iRepoBindata $repoBins)
     {
+        parent::__construct($request);
+
         $this->repoBins = $repoBins;
     }
 
 
     /**
      * Update BinData Stored
-     * 
+     *
      * - if version exists delete current version and replace new one
      *
-     * @param Bindata $binData
-     * @param array   $updates Update Request On BinData
+     * @param string             $resource_hash
+     * @param iEntityAccessToken $token
      *
      * @return array
+     * @throws \Exception
      */
-    function __invoke($binData = null, $updates = null)
+    function __invoke($resource_hash = null, $token = null)
     {
-        $updateBin = clone $binData;
-        
-        if (isset($updates['version']))
+        if (false === $binData = $this->repoBins->findOneByHash($resource_hash))
+            throw new exResourceNotFound(sprintf(
+                'Resource (%s) not found.'
+                , $resource_hash
+            ));
+
+
+        # Assert Token
+        $this->assertTokenByOwnerAndScope($token);
+
+        // has user access to edit content?
+        $this->assertAccessPermissionOnBindata(
+            $binData
+            , \Module\TenderBin\buildOwnerObjectFromToken($token)
+            , true // even if its not protected
+        );
+
+
+        # Parse updates
+
+        $updates        = Entity\BindataHydrate::parseWith($this->request);
+        $hydrateBindata = new Entity\BindataHydrate($updates);
+
+
+
+        # Create Updated Bin
+
+        try
         {
-            // we must duplicate a new version of bindata with new tag
-            $updateBin->setIdentifier(null); // let repo assign new identifier
-            $updateBin->setDateCreated(new \DateTime());
+            $updatedBin = new Entity\BindataEntity($binData);
+            $updatedBin->import($hydrateBindata);
 
-            $version = new BindataVersionObject;
-            $version->setSubversionOf($binData->getIdentifier());
-            $version->setTag($updates['version']);
-            $updateBin->setVersion($version);
+            if (isset($updates['content']) && !isset($updates['version']))
+                throw new \Exception('New Version Tag Must Provided With Content.');
 
-            // If Content Changed new Version Tag Must Provided 
-            (!isset($updates['content'])) ?: $updateBin->setContent($updates['content']);
+
+            if (isset($updates['version'])) {
+                // new version tag given, we must duplicate a new version of bindata
+
+                $updatedBin->setIdentifier(null); // let repo assign new identifier
+                $updatedBin->setDateCreated(new \DateTime());
+
+                $updatedBin->getVersion()
+                    ->setSubversionOf($binData->getIdentifier());
+            }
+
+            if (isset($updates['meta'])) {
+                // Meta Data Given So Must Merge With Original Previous Values
+                $origMeta   = $binData->getMeta();
+                $origMeta->import($hydrateBindata->getMeta());
+                $updatedBin->setMeta($origMeta);
+            }
+
+            __(new Entity\BindataValidate($updatedBin))->assertValidate();
+
+        } catch (exUnexpectedValue $e)
+        {
+            // TODO Handle Validation ...
+            throw $e;
         }
-        
 
-        (!isset($updates['title']))                ?: $updateBin->setTitle($updates['title']);
-        (!isset($updates['timestamp_expiration'])) ?: $updateBin->setDatetimeExpiration($updates['timestamp_expiration']);
-        (!isset($updates['protected']))            ?: $updateBin->setProtected($updates['protected']);
-        if (isset($updates['meta'])) {
-            $meta       = $binData->getMeta();
-            $meta       = \Poirot\Std\cast($meta)->toArray();
-            $meta       = array_merge($meta, $updates['meta']);
-            $updateBin->setMeta($meta);
-        }
 
-        $r = $this->repoBins->save($updateBin);
+        $r = $this->repoBins->save($updatedBin);
 
-        
+
         # Build Response
 
         if ($expiration = $r->getDatetimeExpiration()) {
@@ -82,7 +122,7 @@ class UpdateBinAction
         }
 
         $result = array(
-            '$bindata' => [
+            'bindata' => [
                 'hash'           => (string) $r->getIdentifier(),
                 'title'          => $r->getTitle(),
                 'content_type'   => $r->getMimeType(),
@@ -95,7 +135,7 @@ class UpdateBinAction
 
                 'version'      => [
                     'subversion_of' => ($v = $r->getVersion()->getSubversionOf()) ? [
-                        '$bindata' => [
+                        'bindata' => [
                             'uid' => ( $v ) ? (string) $v : null,
                         ],
                         '_link' => ( $v ) ? (string) IOC::url(
@@ -133,10 +173,6 @@ class UpdateBinAction
          * @return array
          */
         return function ($request = null) {
-            if (!$request instanceof iHttpRequest)
-                throw new \RuntimeException('Cant attain Http Request Object.');
-
-
             # Parse and assert Http Request
             $updates = ParseRequestData::_($request)->parseBody();
             $updates = self::_assertInputData($updates);

@@ -2,12 +2,12 @@
 namespace Module\TenderBin\Actions;
 
 use Module\Foundation\Actions\IOC;
-use Module\TenderBin\Interfaces\Model\iEntityBindata;
+use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
-use Module\TenderBin\Model\BindataOwnerObject;
 use Poirot\Application\Sapi\Server\Http\ListenerDispatch;
 use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
 use Poirot\Http\Interfaces\iHttpRequest;
+use Poirot\OAuth2\Interfaces\Server\Repository\iEntityAccessToken;
 
 
 class SearchBinAction
@@ -20,10 +20,13 @@ class SearchBinAction
     /**
      * ValidatePage constructor.
      *
+     * @param iHttpRequest $request  @IoC /
      * @param iRepoBindata $repoBins @IoC /module/tenderbin/services/repository/Bindata
      */
-    function __construct(iRepoBindata $repoBins)
+    function __construct(iHttpRequest $request, iRepoBindata $repoBins)
     {
+        parent::__construct($request);
+
         $this->repoBins = $repoBins;
     }
 
@@ -31,7 +34,10 @@ class SearchBinAction
     /**
      * Search and Filter Stored BinData
      *
-     * @param array              $queryTerm   Query Search Term
+     * @param iEntityAccessToken $token
+     *
+     *
+     * Query Term:
      *
      * [
      *   'meta' => [
@@ -56,15 +62,48 @@ class SearchBinAction
      *
      * @return array
      */
-    function __invoke($queryTerm = null, $offset = null, $limit = 30)
+    function __invoke($token = null)
     {
-        $bins = $this->repoBins->find($queryTerm, (int) $offset, (int) $limit);
+        # Parse Request Query params
+        $q      = ParseRequestData::_($this->request)->parseQueryParams();
+        // offset is Mongo ObjectID "58e107fa6c6b7a00136318e3"
+        $offset = (isset($q['offset'])) ? $q['offset']       : null;
+        $limit  = (isset($q['limit']))  ? (int) $q['limit']  : 30;
+
+
+        # Build Expression Query Term
+
+        // Search Bins Belong To This Owner Determine By Token
+        $q['owner_identifier'] = \Module\TenderBin\buildOwnerObjectFromToken($token);
+        $expression = \Module\MongoDriver\parseExpressionFromArray( $q
+            , ['meta', 'mime_type', 'version', 'owner_identifier']
+            , 'allow' );
+
+        $bins = $this->repoBins->find(
+            $expression
+            , $offset
+            , (int) $limit + 1
+        );
+
+
+        $bins = \Poirot\Std\cast($bins)->toArray();
+
+        // Check whether to display fetch more link in response?
+        $linkMore = null;
+        if (count($bins) > $limit) {
+            array_pop($bins);                     // skip augmented content to determine has more?
+            $nextOffset = $bins[count($bins)-1]; // retrieve the next from this offset (less than this)
+            $linkMore   = IOC::url(null);
+            $linkMore   = (string) $linkMore->uri()->withQuery('offset='.($nextOffset['bindata']['uid']).'&limit='.$limit);
+        }
+
+        # Build Response
 
         $items = [];
-        /** @var iEntityBindata $bin */
+        /** @var iBindata $bin */
         foreach ($bins as $bin) {
             $items[] = [
-                '$bindata' => [
+                'bindata' => [
                     'uid'          => (string) $bin->getIdentifier(),
                     'title'        => $bin->getTitle(),
                     'mime_type'    => $bin->getMimeType(),
@@ -76,7 +115,7 @@ class SearchBinAction
 
                     'version'      => [
                         'subversion_of' => ($v = (string) $bin->getVersion()->getSubversionOf()) ? [
-                            '$bindata' => [
+                            'bindata' => [
                                 'uid' => ( $v ) ? $v : null,
                             ],
                             '_link' => ( $v ) ? (string) IOC::url(
@@ -99,131 +138,17 @@ class SearchBinAction
         # Build Response:
 
         $r = [
+            'count' => count($items),
+            'items' => $items,
+            '_link_more' => $linkMore,
             '_self' => [
                 'offset' => $offset,
                 'limit'  => $limit,
             ],
-            'count' => count($items),
-            'items' => $items,
         ];
+
         return [
             ListenerDispatch::RESULT_DISPATCH => $r,
         ];
-    }
-
-
-    // Action Chain Helpers:
-
-    /**
-     * Parse Query Terms From Http Request
-     *
-     * /search?meta=is_file:true|file_size>40000&mime_type=audio/mp3&version_tag=latest|low_quality
-     *        &offset=latest_id&limit=20
-     *
-     * @return callable
-     */
-    static function functorParseQueryTermFromRequest()
-    {
-        /**
-         * @param iHttpRequest       $request
-         * @param BindataOwnerObject $ownerObject Search Bins Belong To This Owner Determine By Token
-         *
-         * @return array
-         * @throws \Exception
-         */
-        return function ($request = null, BindataOwnerObject $ownerObject = null) {
-            if (!$request instanceof iHttpRequest)
-                throw new \RuntimeException('Cant attain Http Request Object.');
-
-
-            # Parse Search Query Term
-            $queryTerm = ParseRequestData::_($request)->parseQueryParams();
-            
-            // Search Bins Belong To This Owner Determine By Token
-            $queryTerm['owner_identifier'] = $ownerObject;
-
-            $parsed = [];
-            foreach ($queryTerm as $field => $term)
-            {
-                if (!in_array($field, ['meta', 'mime_type', 'owner_identifier', 'version']) )
-                    continue;
-
-                // $field => latest_id
-                // $field => is_file:true
-                // $field => is_file:true|file_size>4000000
-                // $field => \Traversable ---> field:value|other_field:value2
-
-                if (is_string($term))
-                {
-                    if (false !== strpos($term, '|'))
-                        // mime_type=audio/mp3|audio/wave
-                        $termExchange = explode('|', $term);
-                    else
-                        // version=latest
-                        $termExchange = [$term];
-
-                    $term = [];
-                    foreach ($termExchange as $i => $t)
-                    {
-                        // $t=is_file:true
-                        if (preg_match('/(?P<operand>\w+)(?P<operator>[:<>])(?<value>\w+)/', $t, $matches)) {
-                            switch ($matches['operator']) {
-                                case ':': $operator = '$eq'; break;
-                                case '>': $operator = '$gt'; break;
-                                case '<': $operator = '$lt'; break;
-                                default: throw new \Exception("Operator {$matches['operator']} is invalid.");
-                            }
-
-                            if (!isset($term[$matches['operand']]))
-                                $term[$matches['operand']] = [];
-
-                            if (in_array(strtolower($matches['value']), ['true', 'false']))
-                                $matches['value'] = filter_var($matches['value'], FILTER_VALIDATE_BOOLEAN);
-
-                            $term[$matches['operand']] = array_merge_recursive(
-                                $term[$matches['operand']]
-                                , [
-                                    $operator => [
-                                        $matches['value'],
-                                    ],
-                                ]
-                            );
-                        } else {
-                            // $t=audio/mp3
-                            if (in_array(strtolower($t), ['true', 'false']))
-                                $t = filter_var($t, FILTER_VALIDATE_BOOLEAN);
-
-                            $term = array_merge_recursive($term, [
-                                '$eq' => [$t],
-                            ]);
-                        }
-                    }
-                }
-
-                elseif ($term instanceof \Traversable) {
-                    $iterTerm = $term; $term = [];
-                    foreach ($iterTerm as $operand => $value)
-                        $term[$operand] = [
-                            '$eq' => [
-                                $value
-                            ],
-                        ];
-                }
-
-                elseif (!is_array($term))
-                    throw new \Exception(sprintf('Invalid Term (%s)', \Poirot\Std\flatten($term)));
-
-                $parsed[$field] = $term;
-
-            }// end foreach
-
-
-            # Return to next chain as 'queryTerm' argument
-            return [
-                'queryTerm' => $parsed,
-                'offset'    => (isset($queryTerm['offset'])) ? $queryTerm['offset'] : null,
-                'limit'     => (isset($queryTerm['limit']))  ? $queryTerm['limit']  : null,
-            ];
-        };
     }
 }

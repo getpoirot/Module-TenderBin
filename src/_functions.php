@@ -14,10 +14,7 @@ namespace Module\TenderBin
     function buildOwnerObjectFromToken($token = null)
     {
         if (!$token instanceof iEntityAccessToken)
-            throw new \RuntimeException(sprintf(
-                'Token must be instance of iEntityAccessToken; given: (%s).'
-                , gettype($token)
-            ));
+            return null;
 
 
         $r = new OwnerObject;

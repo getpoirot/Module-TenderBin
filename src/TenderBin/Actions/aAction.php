@@ -2,7 +2,8 @@
 namespace Module\TenderBin\Actions;
 
 
-use Module\TenderBin\Interfaces\Model\iEntityBindata;
+use Module\TenderBin\Interfaces\Model\iBindata;
+use Module\TenderBin\Model\Entity\Bindata\OwnerObject;
 use Poirot\Application\Exception\exAccessDenied;
 use Poirot\Http\Interfaces\iHttpRequest;
 use Poirot\OAuth2\Interfaces\Server\Repository\iEntityAccessToken;
@@ -33,6 +34,8 @@ abstract class aAction
     }
 
 
+    // ...
+
     /**
      * Assert Token
      *
@@ -50,48 +53,42 @@ abstract class aAction
 
     }
 
-
-    // Action Chain Helpers:
-
     /**
      * Assert BinData Access By Check Permission
      * note: determine current user from token
      *
-     * @param boolean $forceCheckPermission Force Check Permission On None Protected Resource
+     * @param iBindata $binData
+     * @param OwnerObject    $ownerObject
+     * @param boolean        $forceCheckPermission Force Check Permission On None Protected Resource
+     *                                             when we want update the resource not protected but
+     *                                             access must be checked.
      *
-     * @return \Closure
+     * @throws exAccessDenied
      */
-    static function functorAssertBinPermissionAccess($forceCheckPermission = false)
-    {
-        /**
-         * @param iEntityBindata     $binData
-         * @param iEntityAccessToken $token
-         * @return array
-         */
-        return function ($binData = null, iEntityAccessToken $token = null) use ($forceCheckPermission)
-        {
-            if (!$binData instanceof iEntityBindata)
-                throw new \RuntimeException(sprintf(
-                    'BinData Entity must be instance of iEntityBindata; given: (%s).'
-                    , gettype($token)
-                ));
+    protected function assertAccessPermissionOnBindata(
+        iBindata $binData = null
+        , $ownerObject
+        , $forceCheckPermission = false
+    ) {
+        if (false === $forceCheckPermission)
+            // Has Force To Check Owner Permission?
+            if (!$binData->isProtected())
+                // Bin Data is not protected; let it play ...
+                return;
 
 
-            if (false === $forceCheckPermission)
-                // Force To Check Owner Permission 
-                if (!$binData->isProtected())
-                    // Bin Data is not protected; let it play ...
-                    return;
-            
-            
-            # Check Owner Privilege On Modify Bindata
-            $curOwnerObject = \Module\TenderBin\buildOwnerObjectFromToken($token);
+        # Check Owner Privilege On Modify Bindata
+        if ($ownerObject instanceof OwnerObject) {
             $binOwnerObject = $binData->getOwnerIdentifier();
             foreach ($binOwnerObject as $k => $v) {
-                if ($curOwnerObject->{$k} !== $v)
+                if ($ownerObject->{$k} !== $v)
                     // Mismatch Owner!!
-                    throw new exAccessDenied('Owner Mismatch; You have not access to edit this data.');
+                    break;
+
+                return;
             }
-        };
+        }
+
+        throw new exAccessDenied('Owner Mismatch; You have not access to edit this data.');
     }
 }

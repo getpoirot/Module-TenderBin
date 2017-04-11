@@ -3,12 +3,14 @@ namespace Module\TenderBin\Actions;
 
 use Module\Foundation\Actions\IOC;
 use Module\TenderBin\Exception\exResourceNotFound;
-use Module\TenderBin\Interfaces\Model\iEntityBindata;
+use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Poirot\Application\Sapi\Server\Http\ListenerDispatch;
 use Poirot\Http\Header\FactoryHttpHeader;
 use Poirot\Http\HttpResponse;
 use Poirot\Http\Interfaces\iHeaders;
+use Poirot\Http\Interfaces\iHttpRequest;
+use Poirot\OAuth2\Interfaces\Server\Repository\iEntityAccessToken;
 
 
 class GetMetaBinAction
@@ -21,23 +23,27 @@ class GetMetaBinAction
     /**
      * ValidatePage constructor.
      *
+     * @param iHttpRequest $request  @IoC /
      * @param iRepoBindata $repoBins @IoC /module/tenderbin/services/repository/Bindata
      */
-    function __construct(iRepoBindata $repoBins)
+    function __construct(iHttpRequest $request, iRepoBindata $repoBins)
     {
+        parent::__construct($request);
+
         $this->repoBins = $repoBins;
     }
 
 
     /**
-     * Create New Bin and Persist
+     * Retrieve Bin Meta Info
      *
-     * @param string $resource_hash
-     * 
+     * @param string             $resource_hash
+     * @param iEntityAccessToken $token
+     *
      * @return array
      * @throws \Exception
      */
-    function __invoke($resource_hash = null)
+    function __invoke($resource_hash = null, $token = null)
     {
         if (false === $binData = $this->repoBins->findOneByHash($resource_hash))
             throw new exResourceNotFound(sprintf(
@@ -45,14 +51,22 @@ class GetMetaBinAction
                 , $resource_hash
             ));
 
-        
+
+        // has user access to edit content?
+        $this->assertAccessPermissionOnBindata(
+            $binData
+            , \Module\TenderBin\buildOwnerObjectFromToken($token)
+            , false // just if its not protected resource
+        );
+
+
         # Retrieve Available Versions
         $subVers  = $this->repoBins->findAllSubversionsOf($resource_hash);
         $versions = array();
-        /** @var iEntityBindata $sv */
+        /** @var iBindata $sv */
         foreach ($subVers as $sv) {
             $versions[$sv->getVersion()->getTag()] = [
-                '$bindata' => [
+                'bindata' => [
                     'uid' => $v = (string) $sv->getIdentifier(),
                 ],
                 '_link' => ( $v ) ? (string) IOC::url(
@@ -76,7 +90,7 @@ class GetMetaBinAction
     static function functorResponseGetInfoResult()
     {
         /**
-         * @param iEntityBindata $binData
+         * @param iBindata $binData
          * @return array
          */
         return function ($binData = null, $versions = null)
@@ -91,22 +105,23 @@ class GetMetaBinAction
 
             return [
                 ListenerDispatch::RESULT_DISPATCH => [
-                    '_self'      => [
-                        'hash' => (string) $binData->getIdentifier(),
+                    'bindata' => [
+                        'title'        => $binData->getTitle(),
+                        'mime_type'    => $binData->getMimeType(),
+                        'expiration'   => $expiration,
+                        'is_protected' => (boolean) $binData->isProtected(),
+                        'meta'         => \Poirot\Std\cast($binData->getMeta())->toArray(function($_, $k) {
+                            return substr($k, 0, 2) === '__'; // filter system specific meta data
+                        }),
+                        'versions'     => $versions,
                     ],
-                    'title'        => $binData->getTitle(),
-                    'mime_type'    => $binData->getMimeType(),
-                    'expiration'   => $expiration,
-                    'is_protected' => (boolean) $binData->isProtected(),
-                    'meta'         => \Poirot\Std\cast($binData->getMeta())->toArray(function($_, $k) {
-                        return substr($k, 0, 2) === '__'; // filter system specific meta data
-                    }),
-                    'versions'     => $versions,
-
                     '_link' => (string) IOC::url(
                         'main/tenderbin/resource/'
                         , array('resource_hash' => (string) $binData->getIdentifier())
                     ),
+                    '_self'      => [
+                        'hash' => (string) $binData->getIdentifier(),
+                    ],
                 ],
             ];
         };
@@ -120,7 +135,7 @@ class GetMetaBinAction
     static function functorResponseHeadInfoResult()
     {
         /**
-         * @param iEntityBindata $binData
+         * @param iBindata $binData
          * @return array
          */
         return function ($binData = null, $versions = null)

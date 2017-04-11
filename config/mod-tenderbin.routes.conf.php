@@ -26,23 +26,15 @@ return [
 
             // Create Bin
             'create' => [
-                'route' => 'RouteSegment',
+                'route' => 'RouteMethodSegment',
                 'options' => [
                     'criteria'    => '[/:custom_uid{{\w+}}]',
+                    'method'      => 'POST',
                     'match_whole' => true,
                 ],
-                'routes' => [
-                    // When POST something
-                    'post' => [
-                        'route'   => 'RouteMethod',
-                        'options' => [
-                            'method' => 'POST',
-                        ],
-                        'params'  => [
-                            ListenerDispatch::CONF_KEY => [
-                                \Module\TenderBin\Actions\IOC::bareService()->createBinAction,
-                            ],
-                        ],
+                'params'  => [
+                    ListenerDispatch::CONF_KEY => [
+                        \Module\TenderBin\Actions\IOC::bareService()->createBinAction,
                     ],
                 ],
             ],
@@ -55,9 +47,7 @@ return [
                 ],
                 'params'  => [
                     ListenerDispatch::CONF_KEY => [
-//                        \Module\TenderBin\Actions\SearchBinAction::functorParseOwnerObjectFromToken(),
-                        \Module\TenderBin\Actions\SearchBinAction::functorParseQueryTermFromRequest(),
-                        '/module/tenderbin/actions/searchBinAction',
+                        \Module\TenderBin\Actions\IOC::bareService()->searchBinAction,
                     ],
                 ],
             ],
@@ -78,8 +68,7 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::CONF_KEY => [
-                                '/module/tenderbin/actions/getMetaBinAction',
-                                \Module\TenderBin\Actions\GetMetaBinAction::functorAssertBinPermissionAccess(),
+                                \Module\TenderBin\Actions\IOC::bareService()->getMetaBinAction,
                                 \Module\TenderBin\Actions\GetMetaBinAction::functorResponseGetInfoResult(),
                             ],
                         ],
@@ -92,8 +81,7 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::CONF_KEY => [
-                                '/module/tenderbin/actions/getMetaBinAction',
-                                \Module\TenderBin\Actions\GetMetaBinAction::functorAssertBinPermissionAccess(),
+                                \Module\TenderBin\Actions\IOC::bareService()->getMetaBinAction,
                                 \Module\TenderBin\Actions\GetMetaBinAction::functorResponseHeadInfoResult(),
                             ],
                         ],
@@ -107,11 +95,7 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::CONF_KEY => [
-                                '/module/tenderbin/actions/findBinAction',
-                                // only owner can update data from bin store
-                                \Module\TenderBin\Actions\UpdateBinAction::functorAssertBinPermissionAccess(true),
-                                \Module\TenderBin\Actions\UpdateBinAction::functorParseUpdateFromRequest(),
-                                '/module/tenderbin/actions/updateBinAction',
+                                \Module\TenderBin\Actions\IOC::bareService()->updateBinAction,
                             ],
                         ],
                     ],
@@ -123,10 +107,7 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::CONF_KEY => [
-                                '/module/tenderbin/actions/findBinAction',
-                                // only owner can delete from bin store
-                                \Module\TenderBin\Actions\DeleteBinAction::functorAssertBinPermissionAccess(true),
-                                '/module/tenderbin/actions/deleteBinAction',
+                                \Module\TenderBin\Actions\IOC::bareService()->deleteBinAction,
                             ],
                         ],
                     ],
@@ -138,9 +119,7 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::CONF_KEY => [
-                                '/module/tenderbin/actions/renderBinAction',
-                                \Module\TenderBin\Actions\RenderBinAction::functorAssertBinPermissionAccess(),
-                                \Module\TenderBin\Actions\RenderBinAction::functorResponseRenderContent(),
+                                \Module\TenderBin\Actions\IOC::bareService()->renderBinAction,
                             ],
                         ],
                     ],

@@ -2,7 +2,7 @@
 namespace Module\TenderBin\Model\Driver\Mongo;
 
 
-use Module\TenderBin\Interfaces\Model\iEntityBindata;
+use Module\TenderBin\Interfaces\Model\iBindata;
 
 use Module\MongoDriver\Model\tPersistable;
 use Module\TenderBin\Model\Entity\Bindata\OwnerObject;
@@ -11,9 +11,9 @@ use MongoDB\BSON\Persistable;
 use MongoDB\BSON\UTCDatetime;
 
 
-class Bindata
-    extends \Module\TenderBin\Model\Entity\Bindata
-    implements iEntityBindata
+class BindataEntity
+    extends \Module\TenderBin\Model\Entity\BindataEntity
+    implements iBindata
     , Persistable
 {
     use tPersistable;

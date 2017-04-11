@@ -3,7 +3,6 @@ namespace Module\TenderBin\Actions
 {
 
     /**
-     * @property FindBinAction    $findBinAction
      * @property RenderBinAction  $renderBinAction
      * @property CreateBinAction  $createBinAction
      * @property UpdateBinAction  $updateBinAction
@@ -19,7 +18,7 @@ namespace Module\TenderBin\Actions
 
 namespace Module\Content\Services\Repository
 {
-    use Module\TenderBin\Model\Mongo\BindataRepo;
+    use Module\TenderBin\Model\Driver\Mongo\BindataRepo;
 
     /**
      * @method static BindataRepo Bindata()

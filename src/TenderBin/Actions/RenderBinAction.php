@@ -2,47 +2,50 @@
 namespace Module\TenderBin\Actions;
 
 use Module\TenderBin\Exception\exResourceNotFound;
-use Module\TenderBin\Interfaces\Model\iEntityBindata;
+use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Poirot\Application\Sapi\Server\Http\ListenerDispatch;
 use Poirot\Http\Header\FactoryHttpHeader;
 use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
 use Poirot\Http\HttpResponse;
 use Poirot\Http\Interfaces\iHttpRequest;
+use Poirot\OAuth2\Interfaces\Server\Repository\iEntityAccessToken;
 use Poirot\Stream\Interfaces\iStreamable;
 use Poirot\Stream\Psr\StreamBridgeFromPsr;
 use Psr\Http\Message\UploadedFileInterface;
 
 
 class RenderBinAction
-    extends FindBinAction
+    extends aAction
 {
-    /** @var iHttpRequest */
-    protected $request;
+    /** @var iRepoBindata */
+    protected $repoBins;
 
 
     /**
      * ValidatePage constructor.
      *
-     * @param iRepoBindata $repoBins    @IoC /module/tenderbin/services/repository/Bindata
-     * @param iHttpRequest $httpRequest @IoC /request
+     * @param iHttpRequest $request  @IoC /
+     * @param iRepoBindata $repoBins @IoC /module/tenderbin/services/repository/Bindata
      */
-    function __construct(iRepoBindata $repoBins, iHttpRequest $httpRequest)
+    function __construct(iHttpRequest $request, iRepoBindata $repoBins)
     {
-        parent::__construct($repoBins);
-        $this->request = $httpRequest;
+        parent::__construct($request);
+
+        $this->repoBins = $repoBins;
     }
 
 
     /**
-     * Create New Bin and Persist
+     * Render Bin Content Into Browser
      *
-     * @param string $resource_hash
-     * 
+     * @param string             $resource_hash
+     * @param iEntityAccessToken $token
+     *
      * @return array
      * @throws \Exception
      */
-    function __invoke($resource_hash = null)
+    function __invoke($resource_hash = null, $token = null)
     {
         $_get = ParseRequestData::_($this->request)->parseQueryParams();
 
@@ -58,57 +61,61 @@ class RenderBinAction
                 'Resource (%s) not found.'
                 , $resource_hash
             ));
-        
-        return ['binData' => $binData];
+
+
+        // has user access to retrieve content
+        $this->assertAccessPermissionOnBindata(
+            $binData
+            , \Module\TenderBin\buildOwnerObjectFromToken($token)
+            , false // just if its not protected resource
+        );
+
+
+        return [
+            ListenerDispatch::RESULT_DISPATCH => $this->makeHttpResponseFromBinData($binData)
+        ];
     }
 
-
-    // Action Chain Helpers:
+    // ..
 
     /**
-     * Response BinData Info GET Method
+     * // TODO Render as a Service Extensible
+     * Render Bin Data To Response
      *
-     * @return \Closure
+     * @param iBindata $binData
+     *
+     * @return HttpResponse
      */
-    static function functorResponseRenderContent()
+    protected function makeHttpResponseFromBinData(iBindata $binData)
     {
-        /**
-         * @param iEntityBindata $binData
-         * @return array
-         */
-        return function ($binData = null)
-        {
-            $response = new HttpResponse();
+        $response = new HttpResponse();
 
-            $content  = $binData->getContent();
-            if ($content instanceof UploadedFileInterface) {
-                $content = $content->getStream();
-                $content = new StreamBridgeFromPsr($content);
-            } elseif (!$content instanceof iStreamable)
-                $content = (string) $content;
-
-            
-            # Content Length
-            if ($content instanceof iStreamable)
-                $contentLength = $content->getSize();
-            else
-                $contentLength = strlen($content);
-
-            $response->headers()->insert(FactoryHttpHeader::of(array(
-                'Content-Length' => $contentLength
-            )));
+        $content  = $binData->getContent();
+        if ($content instanceof UploadedFileInterface) {
+            $content = $content->getStream();
+            $content = new StreamBridgeFromPsr($content);
+        } elseif (!$content instanceof iStreamable)
+            $content = (string) $content;
 
 
-            # Content Type
-            $response->headers()->insert(FactoryHttpHeader::of(array(
-                'Content-Type' => $binData->getMimeType()
-            )));
+        # Content Length
+        if ($content instanceof iStreamable)
+            $contentLength = $content->getSize();
+        else
+            $contentLength = strlen($content);
 
-            $response->setBody($content);
+        $response->headers()->insert(FactoryHttpHeader::of(array(
+            'Content-Length' => $contentLength
+        )));
 
-            return [
-                ListenerDispatch::RESULT_DISPATCH => $response,
-            ];
-        };
+
+        # Content Type
+        $response->headers()->insert(FactoryHttpHeader::of(array(
+            'Content-Type' => $binData->getMimeType()
+        )));
+
+        $response->setBody($content);
+
+        return $response;
     }
 }

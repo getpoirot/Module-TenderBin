@@ -2,7 +2,7 @@
 namespace Module\TenderBin\Interfaces\Model\Repo;
 
 
-use Module\TenderBin\Interfaces\Model\iEntityBindata;
+use Module\TenderBin\Interfaces\Model\iBindata;
 
 interface iRepoBindata
 {
@@ -20,13 +20,13 @@ interface iRepoBindata
     /**
      * Find By Search Term
      *
-     * @param array  $term
+     * @param array  $expression
      * @param string $offset
      * @param int    $limit
      * 
      * @return \Traversable
      */
-    function find(array $term, $offset = null, $limit = null);
+    function find(array $expression, $offset = null, $limit = null);
     
     /**
      * Persist Bindata
@@ -34,27 +34,27 @@ interface iRepoBindata
      * - if Bindata entity has no identifier used ::nextIdentifier
      *   to assign something new
      *
-     * @param iEntityBindata $entity
+     * @param iBindata $entity
      *
-     * @return iEntityBindata Contains inserted uid
+     * @return iBindata Contains inserted uid
      */
-    function insert(iEntityBindata $entity);
+    function insert(iBindata $entity);
 
     /**
      * Save Entity By Insert Or Update
      * 
-     * @param iEntityBindata $entity
+     * @param iBindata $entity
      * 
-     * @return iEntityBindata
+     * @return iBindata
      */
-    function save(iEntityBindata $entity);
+    function save(iBindata $entity);
     
     /**
      * Find Match By Given Hash ID
      *
      * @param string|mixed $hash
      *
-     * @return iEntityBindata|false
+     * @return iBindata|false
      */
     function findOneByHash($hash);
 
@@ -73,7 +73,7 @@ interface iRepoBindata
      * @param $hash
      * @param $tag
      * 
-     * @return iEntityBindata|false
+     * @return iBindata|false
      */
     function findOneTagedSubverOf($hash, $tag);
     
