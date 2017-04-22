@@ -4,20 +4,17 @@ namespace Module\TenderBin\Model\Entity;
 use Module\TenderBin\Interfaces\Model\BinData\iObjectVersion;
 use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Model\Entity\Bindata\VersionObject;
-use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
-use Poirot\Http\Interfaces\iHttpRequest;
-use Poirot\Std\ConfigurableSetter;
-use Poirot\Std\Hydrator\HydrateGetters;
+use Poirot\Std\Hydrator\aHydrateEntity;
 use Psr\Http\Message\UploadedFileInterface;
+
 
 /**
  * Use To Hydrate Bindata Entity From Http Request
  *
  */
 class BindataHydrate
-    extends ConfigurableSetter
-    implements \IteratorAggregate
-    , iBindata
+    extends aHydrateEntity
+    implements iBindata
 {
     const FIELD_TITLE        = 'title';
     const FIELD_CONTENT      = 'content';
@@ -218,67 +215,5 @@ class BindataHydrate
         }
 
         return $this->version;
-    }
-
-
-    // Implement Configurable
-
-    /**
-     * @inheritdoc
-     *
-     * @param array|\Traversable|iHttpRequest $optionsResource
-     * @param array       $_
-     *        usually pass as argument into ::with if self instanced
-     *
-     * @throws \InvalidArgumentException if resource not supported
-     * @return array
-     */
-    static function parseWith($optionsResource, array $_ = null)
-    {
-        if (!static::isConfigurableWith($optionsResource))
-            throw new \InvalidArgumentException(sprintf(
-                'Invalid Configuration Resource provided; given: (%s).'
-                , \Poirot\Std\flatten($optionsResource)
-            ));
-
-
-        // ..
-        if ($optionsResource instanceof iHttpRequest)
-            # Parse and assert Http Request
-            $optionsResource = ParseRequestData::_($optionsResource)->parseBody();
-
-        return parent::parseWith($optionsResource);
-    }
-
-    /**
-     * Is Configurable With Given Resource
-     *
-     * @param mixed $optionsResource
-     *
-     * @return boolean
-     */
-    static function isConfigurableWith($optionsResource)
-    {
-        return $optionsResource instanceof iHttpRequest || parent::isConfigurableWith($optionsResource);
-    }
-
-
-    // Implement IteratorAggregate
-
-    /**
-     * @ignore Ignore from getter hydrator
-     *
-     * Retrieve an external iterator
-     * @link http://php.net/manual/en/iteratoraggregate.getiterator.php
-     * @return \Traversable An instance of an object implementing <b>Iterator</b> or
-     * <b>Traversable</b>
-     * @since 5.0.0
-     */
-    public function getIterator()
-    {
-        $hydrator = new HydrateGetters($this);
-        $hydrator->setExcludeNullValues();
-
-        return $hydrator;
     }
 }
