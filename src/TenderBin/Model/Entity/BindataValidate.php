@@ -2,11 +2,13 @@
 namespace Module\TenderBin\Model\Entity;
 
 use Module\TenderBin\Interfaces\Model\iBindata;
+use Poirot\Std\aValidator;
 use Poirot\Std\Exceptions\exUnexpectedValue;
 use Psr\Http\Message\UploadedFileInterface;
 
 
 class BindataValidate
+    extends aValidator
 {
     protected $entity;
 
@@ -26,7 +28,7 @@ class BindataValidate
      *
      * @throws exUnexpectedValue
      */
-    function assertValidate()
+    function doAssertValidate()
     {
         $exceptions = [];
 
@@ -54,28 +56,6 @@ class BindataValidate
         }
 
 
-        // ..
-
-        $_f__chainExceptions = function (exUnexpectedValue $ex, &$list) use (&$_f__chainExceptions)
-        {
-            if (empty($list))
-                return $ex;
-
-            $exception = array_pop($list);
-
-            $r = new exUnexpectedValue(
-                $exception->getMessage()
-                , $exception->getParameterName()
-                , $exception->getCode()
-                , $_f__chainExceptions($ex, $list)
-            );
-
-            return $r;
-        };
-
-        if (!empty($exceptions)) {
-            $ex = $_f__chainExceptions(new exUnexpectedValue('Validation Error', ''), $exceptions);
-            throw $ex;
-        }
+        return $exceptions;
     }
 }
