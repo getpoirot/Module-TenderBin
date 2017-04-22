@@ -1,12 +1,11 @@
 <?php
 namespace Module\TenderBin\Model\Entity\Bindata;
 
-
-use Module\MongoDriver\Model\aObject;
+use Poirot\Std\Struct\aValueObject;
 
 
 class OwnerObject
-     extends aObject
+     extends aValueObject
 {
     protected $realm;
     protected $uid;
