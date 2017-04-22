@@ -1,7 +1,6 @@
 <?php
 namespace Module\TenderBin\Actions;
 
-
 use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Model\Entity\Bindata\OwnerObject;
 use Poirot\Application\Exception\exAccessDenied;
@@ -79,16 +78,15 @@ abstract class aAction
 
         # Check Owner Privilege On Modify Bindata
         if ($ownerObject instanceof OwnerObject) {
+            /** @var OwnerObject $binOwnerObject */
             $binOwnerObject = $binData->getOwnerIdentifier();
-            foreach ($binOwnerObject as $k => $v) {
-                if ($ownerObject->{$k} !== $v)
-                    // Mismatch Owner!!
-                    break;
-
-                return;
-            }
+            if (! (
+                   $ownerObject->getRealm() == $binOwnerObject->getRealm()
+                && $ownerObject->getUid()   == $binOwnerObject->getUid()
+            ) )
+                // Mismatch Owner!!
+                throw new exAccessDenied('Owner Mismatch; You have not access to edit this data.');
         }
 
-        throw new exAccessDenied('Owner Mismatch; You have not access to edit this data.');
     }
 }
