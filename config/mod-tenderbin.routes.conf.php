@@ -9,7 +9,7 @@ return [
             'match_whole' => false,
         ],
         'params'  => [
-            ListenerDispatch::CONF_KEY => [
+            ListenerDispatch::ACTIONS => [
                 // This Action Run First In Chains and Assert Validate Token
                 //! define array allow actions on matched routes chained after this action
                 /*
@@ -33,7 +33,7 @@ return [
                     'match_whole' => true,
                 ],
                 'params'  => [
-                    ListenerDispatch::CONF_KEY => [
+                    ListenerDispatch::ACTIONS => [
                         \Module\TenderBin\Actions\IOC::bareService()->createBinAction,
                     ],
                 ],
@@ -46,7 +46,7 @@ return [
                     'match_whole' => true,
                 ],
                 'params'  => [
-                    ListenerDispatch::CONF_KEY => [
+                    ListenerDispatch::ACTIONS => [
                         \Module\TenderBin\Actions\IOC::bareService()->searchBinAction,
                     ],
                 ],
@@ -67,7 +67,7 @@ return [
                             'match_whole' => true,
                         ],
                         'params'  => [
-                            ListenerDispatch::CONF_KEY => [
+                            ListenerDispatch::ACTIONS => [
                                 \Module\TenderBin\Actions\IOC::bareService()->getMetaBinAction,
                                 \Module\TenderBin\Actions\GetMetaBinAction::functorResponseGetInfoResult(),
                             ],
@@ -80,7 +80,7 @@ return [
                             'method' => 'HEAD',
                         ],
                         'params'  => [
-                            ListenerDispatch::CONF_KEY => [
+                            ListenerDispatch::ACTIONS => [
                                 \Module\TenderBin\Actions\IOC::bareService()->getMetaBinAction,
                                 \Module\TenderBin\Actions\GetMetaBinAction::functorResponseHeadInfoResult(),
                             ],
@@ -94,7 +94,7 @@ return [
                             'method' => 'PUT',
                         ],
                         'params'  => [
-                            ListenerDispatch::CONF_KEY => [
+                            ListenerDispatch::ACTIONS => [
                                 \Module\TenderBin\Actions\IOC::bareService()->updateBinAction,
                             ],
                         ],
@@ -106,7 +106,7 @@ return [
                             'method' => 'DELETE',
                         ],
                         'params'  => [
-                            ListenerDispatch::CONF_KEY => [
+                            ListenerDispatch::ACTIONS => [
                                 \Module\TenderBin\Actions\IOC::bareService()->deleteBinAction,
                             ],
                         ],
@@ -118,7 +118,7 @@ return [
                             'method' => 'GET',
                         ],
                         'params'  => [
-                            ListenerDispatch::CONF_KEY => [
+                            ListenerDispatch::ACTIONS => [
                                 \Module\TenderBin\Actions\IOC::bareService()->renderBinAction,
                             ],
                         ],

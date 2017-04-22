@@ -1,7 +1,6 @@
 <?php
 namespace Module\TenderBin\Model\Driver\Mongo;
 
-
 use Module\TenderBin\Interfaces\Model\iBindata;
 
 use Module\MongoDriver\Model\tPersistable;

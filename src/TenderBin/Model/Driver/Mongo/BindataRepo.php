@@ -45,7 +45,7 @@ class BindataRepo
      * @return mixed
      * @throws \Exception
      */
-    function genNextIdentifier($id = null)
+    function attainNextIdentifier($id = null)
     {
         if ($this->_functorIDGenerator)
             // Generator will build ID
@@ -106,7 +106,7 @@ class BindataRepo
             ), 400);
 
 
-        $givenIdentifier = $this->genNextIdentifier($givenIdentifier);
+        $givenIdentifier = $this->attainNextIdentifier($givenIdentifier);
 
         $dateCreated = $entity->getDateCreated();
         if (!$dateCreated)
@@ -215,7 +215,7 @@ class BindataRepo
     {
         /** @var iBindata $r */
         $r = $this->_query()->findOne([
-            '_id' => $this->genNextIdentifier($hash),
+            '_id' => $this->attainNextIdentifier($hash),
         ]);
 
         // Not Found Any Match!!!
@@ -264,7 +264,7 @@ class BindataRepo
         if ($offset)
             $condition = [
                 '_id' => [
-                    '$lt' => $this->genNextIdentifier($offset),
+                    '$lt' => $this->attainNextIdentifier($offset),
                 ]
             ] + $condition;
 
@@ -301,7 +301,7 @@ class BindataRepo
      */
     function deleteOneByHash($hash)
     {
-        $hash = $this->genNextIdentifier($hash);
+        $hash = $this->attainNextIdentifier($hash);
         
         # Find and delete object
         /** @var iBindata $r */
@@ -334,7 +334,7 @@ class BindataRepo
     function findAllSubversionsOf($hash)
     {
         $currStoredVer = $this->_query()->find([
-            'version.subversion_of' => $this->genNextIdentifier( $hash ),
+            'version.subversion_of' => $this->attainNextIdentifier( $hash ),
         ]);
 
         return $currStoredVer;
@@ -350,7 +350,7 @@ class BindataRepo
      */
     function findOneTagedSubverOf($hash, $tag)
     {
-        $hash = $this->genNextIdentifier( $hash );
+        $hash = $this->attainNextIdentifier( $hash );
 
         $r = $this->_query()->findOne([
             'version.subversion_of' => $hash,

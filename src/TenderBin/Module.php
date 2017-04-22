@@ -22,9 +22,9 @@ and 400 for all other invalid requests or responses.
 class Module implements Sapi\iSapiModule
     , Sapi\Module\Feature\iFeatureModuleInitModuleManager
     , Sapi\Module\Feature\iFeatureModuleMergeConfig
-    , Sapi\Module\Feature\iFeatureModuleNestActions
     , Sapi\Module\Feature\iFeatureModuleNestServices
     , Sapi\Module\Feature\iFeatureOnPostLoadModulesGrabServices
+    , Sapi\Module\Feature\iFeatureModuleNestActions
 {
     const CONF_KEY = 'module.tenderbin';
 

@@ -1,7 +1,6 @@
 <?php
 namespace Module\TenderBin\Model\Entity;
 
-
 use Module\TenderBin\Interfaces\Model\BinData\iObjectVersion;
 use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Model\Entity\Bindata\OwnerObject;

@@ -14,7 +14,7 @@ interface iRepoBindata
      * 
      * @return mixed
      */
-    function genNextIdentifier($id = null);
+    function attainNextIdentifier($id = null);
 
 
     /**
