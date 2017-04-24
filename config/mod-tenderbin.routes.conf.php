@@ -24,6 +24,22 @@ return [
 
         'routes' => [
 
+            // Cleanup Bins
+            // This endpoint must secured from direct access ....
+            // TODO cleanup moved and used as cli-command
+            'cleanup' => [
+                'route' => 'RouteSegment',
+                'options' => [
+                    'criteria'    => '/federate/cleanup',
+                    'match_whole' => true,
+                ],
+                'params'  => [
+                    ListenerDispatch::ACTIONS => [
+                        '/module/tenderbin/actions/cleanupBinsAction',
+                    ],
+                ],
+            ],
+
             // Create Bin
             'create' => [
                 'route' => 'RouteMethodSegment',

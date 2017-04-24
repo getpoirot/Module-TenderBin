@@ -13,5 +13,7 @@ return array(
         'deleteBinAction'  => \Module\TenderBin\Actions\DeleteBinAction::class,
         'searchBinAction'  => \Module\TenderBin\Actions\SearchBinAction::class,
         'getMetaBinAction' => \Module\TenderBin\Actions\GetMetaBinAction::class,
+
+        'cleanupBinsAction' => \Module\TenderBin\Actions\CleanupBinsAction::class,
     ),
 );

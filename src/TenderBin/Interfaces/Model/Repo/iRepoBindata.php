@@ -27,7 +27,14 @@ interface iRepoBindata
      * @return \Traversable
      */
     function find(array $expression, $offset = null, $limit = null);
-    
+
+    /**
+     * Find Expired
+     *
+     * @return \Traversable
+     */
+    function findExpired();
+
     /**
      * Persist Bindata
      *

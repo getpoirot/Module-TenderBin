@@ -11,6 +11,7 @@ use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Module\TenderBin\Storage\DownloadFile;
 use Module\TenderBin\Storage\StorageGridFS;
 use MongoDB\BSON\ObjectID;
+use MongoDB\BSON\UTCDatetime;
 use MongoDB\Driver\Cursor;
 use Psr\Http\Message\UploadedFileInterface;
 
@@ -301,7 +302,32 @@ class BindataRepo
 
         return $this->_wrapFileLoaderIterator($r);
     }
-    
+
+    /**
+     * Find Expired
+     *
+     * @return \Traversable
+     */
+    function findExpired()
+    {
+        $currTime = new \DateTime();
+
+        $r = $this->_query()->find(
+            [
+                'datetime_expiration_mongo' => [
+                    '$lte' => new UTCDatetime($currTime->getTimestamp() * 1000),
+                ],
+            ]
+            , [
+                'sort'  => [
+                    '_id' => 1,
+                ]
+            ]
+        );
+
+        return $this->_wrapFileLoaderIterator($r);
+    }
+
     /**
      * Delete Bin Data With Given Hash
      *
