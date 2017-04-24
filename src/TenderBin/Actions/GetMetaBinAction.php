@@ -61,7 +61,7 @@ class GetMetaBinAction
 
 
         # Retrieve Available Versions
-        $subVers  = $this->repoBins->findAllSubversionsOf($resource_hash);
+        $subVers  = $this->repoBins->findSubVersionsOf($resource_hash);
         $versions = array();
         /** @var iBindata $sv */
         foreach ($subVers as $sv) {

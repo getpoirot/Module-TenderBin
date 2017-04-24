@@ -5,11 +5,14 @@ use Module\TenderBin\Model\Entity;
 use Module\Foundation\Actions\IOC;
 use Module\TenderBin\Exception\exResourceNotFound;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
+use Module\TenderBin\Storage\DownloadFile;
+use Module\TenderBin\Storage\UploadFile;
 use Poirot\Application\Sapi\Server\Http\ListenerDispatch;
 use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
 use Poirot\Http\Interfaces\iHttpRequest;
 use Poirot\OAuth2\Interfaces\Server\Repository\iEntityAccessToken;
 use Poirot\Std\Exceptions\exUnexpectedValue;
+use Poirot\Std\Hydrator\HydrateGetters;
 
 
 class UpdateBinAction
@@ -87,7 +90,12 @@ class UpdateBinAction
 
                 $updatedBin->setIdentifier(null); // let repo assign new identifier
                 $updatedBin->setDateCreated(new \DateTime());
-
+                if ($updatedBin->getContent() instanceof DownloadFile) {
+                    // File content not uploaded or changed
+                    // make upload file from this so repo notify to copy new version of file
+                    $hydrator = new HydrateGetters( $updatedBin->getContent() );
+                    $updatedBin->setContent( new UploadFile($hydrator) );
+                }
                 $updatedBin->getVersion()
                     ->setSubversionOf($binData->getIdentifier());
             }

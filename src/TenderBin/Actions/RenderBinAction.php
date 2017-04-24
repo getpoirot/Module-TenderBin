@@ -51,7 +51,7 @@ class RenderBinAction
 
         if (isset($_get['ver'])) {
             $version = $_get['ver'];
-            $binData = $this->repoBins->findOneTagedSubverOf($resource_hash, $version);
+            $binData = $this->repoBins->findATaggedSubVerOf($resource_hash, $version);
         } else {
             $binData = $this->repoBins->findOneByHash($resource_hash);
         }

@@ -65,7 +65,7 @@ interface iRepoBindata
      *
      * @return \MongoCursor
      */
-    function findAllSubversionsOf($hash);
+    function findSubVersionsOf($hash);
 
     /**
      * Find Subversion Of an Entity Bin IF Has?
@@ -75,7 +75,7 @@ interface iRepoBindata
      * 
      * @return iBindata|false
      */
-    function findOneTagedSubverOf($hash, $tag);
+    function findATaggedSubVerOf($hash, $tag);
     
     /**
      * Delete Bin Data With Given Hash

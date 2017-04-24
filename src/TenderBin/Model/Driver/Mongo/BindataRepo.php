@@ -9,10 +9,9 @@ use Module\MongoDriver\Model\Repository\aRepository;
 use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Module\TenderBin\Storage\DownloadFile;
+use Module\TenderBin\Storage\StorageGridFS;
 use MongoDB\BSON\ObjectID;
-use MongoDB\GridFS\Exception\FileNotFoundException;
-use Poirot\Stream\ResourceStream;
-use Poirot\Stream\Streamable;
+use MongoDB\Driver\Cursor;
 use Psr\Http\Message\UploadedFileInterface;
 
 // TODO return entity object instead of persistence entity
@@ -23,10 +22,12 @@ class BindataRepo
     extends aRepository
     implements iRepoBindata
 {
+    /** @var StorageGridFS */
+    protected $storage;
     /** @var callable */
     protected $_functorIDGenerator;
 
-    
+
     /**
      * Initialize Object
      *
@@ -34,6 +35,7 @@ class BindataRepo
     protected function __init()
     {
         $this->setModelPersist(new Mongo\BindataEntity);
+        $this->storage = new StorageGridFS($this->gateway);
     }
 
     /**
@@ -99,23 +101,27 @@ class BindataRepo
     function insert(iBindata $entity)
     {
         $givenIdentifier = $entity->getIdentifier();
-        if ($givenIdentifier && false !== $this->findOneByHash($givenIdentifier))
-            throw new exDuplicateEntry(sprintf(
-                'Bindata with Hash (%s) exists.'
-                , (string) $givenIdentifier
-            ), 400);
+        if ($givenIdentifier) {
+            $r = $this->_query()->findOne([
+                '_id' => $this->attainNextIdentifier($givenIdentifier),
+            ]);
 
+            if ($r)
+                throw new exDuplicateEntry(sprintf(
+                    'Bindata with Hash (%s) exists.'
+                    , (string) $givenIdentifier
+                ), 400);
+        }
 
-        $givenIdentifier = $this->attainNextIdentifier($givenIdentifier);
 
         $dateCreated = $entity->getDateCreated();
         if (!$dateCreated)
             $dateCreated = new \DateTime();
-        
+
         # Convert given entity to Persistence Entity Object To Insert
         $binData = new Mongo\BindataEntity;
         $binData
-            ->setIdentifier($givenIdentifier)
+            ->setIdentifier( $this->attainNextIdentifier($givenIdentifier) )
             ->setTitle($entity->getTitle())
             ->setVersion($entity->getVersion())
             ->setMeta($entity->getMeta())
@@ -131,7 +137,7 @@ class BindataRepo
         # check has any same subversion
         if ($entity->getVersion()->getSubversionOf()) {
             // this store as subversion of base bindata and must not has duplicate version
-            $sb = $this->findOneTagedSubverOf($entity->getVersion()->getSubversionOf(), $entity->getVersion()->getTag());
+            $sb = $this->findATaggedSubVerOf($entity->getVersion()->getSubversionOf(), $entity->getVersion()->getTag());
             if ($sb) {
                 // Delete current version and replace with this one
                 $this->deleteOneByHash($sb->getIdentifier());
@@ -140,9 +146,40 @@ class BindataRepo
 
 
         # Store BinData File Content In Storage
-        if ($entity->getContent() instanceof UploadedFileInterface)
-            // Handle file storage return meta record
-            $binData = $this->_storeSaveBinDataFile($binData);
+        if ( $this->_isFile($entity) )
+        {
+            $content = $entity->getContent();
+
+            if (! $content instanceof DownloadFileInterface )
+                // Write File Content
+                $fileEntity = $this->storage->write( $content );
+            else
+                // Assume file retrieved from storage so not write it again
+                $fileEntity = $this->storage->getFileDocument( $content->getFSResource() );
+
+
+            # Make Bin Data For Parent Meta Repository
+
+            if ($content instanceof UploadedFileInterface || $content instanceof DownloadFileInterface) {
+                $filename = $content->getClientFilename();
+                $binData->setMimeType($content->getClientMediaType());
+
+            } else
+                $filename  = $fileEntity->getFilename();
+
+            $binData->setContent([
+                '__storage_id' => $fileEntity->get_Id(),
+                '__storage'    => get_class($this->storage),
+            ]);
+
+            $binData->getMeta()->import([
+                'is_file'  => true,
+                // keep original filename
+                'filename' => $filename,
+                'filesize' => $fileEntity->getLength(),
+                'md5'      => $fileEntity->getMd5(),
+            ]);
+        }
 
         
         # Persist BinData Record 
@@ -150,14 +187,10 @@ class BindataRepo
 
 
         # Give back entity with given id and meta record info
-
-        $binData->setIdentifier($givenIdentifier);
         return $binData;
     }
 
     /**
-     * // TODO improve update by not have to delete old one and insert again
-     *
      * Save Entity By Insert Or Update
      *
      * @param iBindata $entity
@@ -166,41 +199,29 @@ class BindataRepo
      */
     function save(iBindata $entity)
     {
-        $updateFlag = false;
-        if ($entity->getIdentifier())
+        if ( $entity->getIdentifier() )
         {
-            if (
-                !  ($entity->getContent() instanceof DownloadFileInterface)
-                && ($entity->getContent() instanceof UploadedFileInterface)
-            )
-                // Delete currently related stored file
-                $this->_storeDeleteAssociatedFile($entity);
+            if ($existEntity = $this->findOneByHash( $entity->getIdentifier() ))
+            {
+                // just delete bin meta
+                $this->_query()->deleteOne([
+                    '_id' => $this->attainNextIdentifier( $entity->getIdentifier() ),
+                ]);
 
-
-            $updateFlag = true;
+                if ( ! $entity->getContent() instanceof DownloadFileInterface ) {
+                    if ($existEntity->getContent() instanceof DownloadFileInterface) {
+                        // Delete currently related stored file
+                        // Because new File Uploaded
+                        $this->storage->delete(
+                            $this->storage->getFileIDFromStream( $existEntity->getContent()->getFSResource() )
+                        );
+                    }
+                }
+            }
         }
 
-        if ( ( $file = $entity->getContent() ) instanceof DownloadFileInterface) {
-            // Get Back Content Into Storage Meta Content
-            // so not duplicate file into storage ...
-            $gridFS  = $this->gateway->selectGridFSBucket();
-            $content = [
-                '_id'      => $gridFS->getFileIdForStream( $file->getFSResource() ),
-                'filename' => $file->getClientFilename(),
-            ];
-            $entity->setContent($content);
-
-        }
-
-
-        if ($updateFlag)
-            // just delete bin meta
-            $this->_query()->deleteOne([
-                '_id' => $entity->getIdentifier(),
-            ]);
 
         $r = $this->insert($entity);
-
         return $r;
     }
 
@@ -213,33 +234,33 @@ class BindataRepo
      */
     function findOneByHash($hash)
     {
-        /** @var iBindata $r */
-        $r = $this->_query()->findOne([
+        /** @var BindataEntity $binDataEntity */
+        $binDataEntity = $this->_query()->findOne([
             '_id' => $this->attainNextIdentifier($hash),
         ]);
 
         // Not Found Any Match!!!
-        if (!$r) return false;
-        
+        if (!$binDataEntity) return false;
+
+
         # Check Whether BinData is Associated To File??
-        if ($this->_storeIsFile($r))
-            // Retrieve File From Storage
-            $r = $this->_storeRetriveAndInjectFile($r);
+        if ( $this->_isFile($binDataEntity) )
+            $this->_loadFileIntoBinData($binDataEntity);
 
 
         # Convert Persist entity to Entity Object
         $binData = new Entity\BindataEntity;
         $binData
-            ->setIdentifier($r->getIdentifier())
-            ->setTitle($r->getTitle())
-            ->setVersion($r->getVersion())
-            ->setMeta($r->getMeta())
-            ->setContent($r->getContent())
-            ->setMimeType($r->getMimeType())
-            ->setOwnerIdentifier($r->getOwnerIdentifier())
-            ->setDatetimeExpiration($r->getDatetimeExpiration())
-            ->setDateCreated($r->getDateCreated())
-            ->setProtected($r->isProtected())
+            ->setIdentifier($binDataEntity->getIdentifier())
+            ->setTitle($binDataEntity->getTitle())
+            ->setVersion($binDataEntity->getVersion())
+            ->setMeta($binDataEntity->getMeta())
+            ->setContent($binDataEntity->getContent())
+            ->setMimeType($binDataEntity->getMimeType())
+            ->setOwnerIdentifier($binDataEntity->getOwnerIdentifier())
+            ->setDatetimeExpiration($binDataEntity->getDatetimeExpiration())
+            ->setDateCreated($binDataEntity->getDateCreated())
+            ->setProtected($binDataEntity->isProtected())
         ;
 
         return $binData;
@@ -274,19 +295,11 @@ class BindataRepo
                 'limit' => $limit,
                 'sort'  => [
                     '_id' => -1,
-                ],
-                'projection' => [
-                    '_id'   => true,
-                    'title' => true,
-                    'mime_type' => true,
-                    'version'   => true,
-                    'protected' => true,
-                    'meta'      => true,
                 ]
             ]
         );
 
-        return $r;
+        return $this->_wrapFileLoaderIterator($r);
     }
     
     /**
@@ -304,19 +317,24 @@ class BindataRepo
         $hash = $this->attainNextIdentifier($hash);
         
         # Find and delete object
-        /** @var iBindata $r */
-        $r = $this->_query()->findOneAndDelete([
+        /** @var iBindata $binDataEntity */
+        $binDataEntity = $this->_query()->findOneAndDelete([
             '_id' => $hash,
         ]);
 
 
         # Check Whether BinData is Associated To File??
-        if ($this->_storeIsFile($r))
-            $this->_storeDeleteAssociatedFile($r);
+        if ( $this->_isFile($binDataEntity) ) {
+            // Document From Bindata persist
+            // will contains content.__storage_id
+            // open file from storage with given id
+            $content  = $binDataEntity->getContent();
+            $this->storage->delete($content['__storage_id']);
+        }
 
 
         # Delete Tagged Versions
-        $subVers = $this->findAllSubversionsOf($hash);
+        $subVers = $this->findSubVersionsOf($hash);
         /** @var iBindata $v */
         foreach ($subVers as $v)
             $this->deleteOneByHash($v->getIdentifier());
@@ -329,15 +347,15 @@ class BindataRepo
      *
      * @param string|mixed $hash
      *
-     * @return \MongoCursor
+     * @return \Iterator of @see iBindata
      */
-    function findAllSubversionsOf($hash)
+    function findSubVersionsOf($hash)
     {
         $currStoredVer = $this->_query()->find([
             'version.subversion_of' => $this->attainNextIdentifier( $hash ),
         ]);
 
-        return $currStoredVer;
+        return $this->_wrapFileLoaderIterator($currStoredVer);
     }
 
     /**
@@ -348,12 +366,10 @@ class BindataRepo
      *
      * @return iBindata|false
      */
-    function findOneTagedSubverOf($hash, $tag)
+    function findATaggedSubVerOf($hash, $tag)
     {
-        $hash = $this->attainNextIdentifier( $hash );
-
         $r = $this->_query()->findOne([
-            'version.subversion_of' => $hash,
+            'version.subversion_of' => $this->attainNextIdentifier($hash),
             'version.tag'           => (string) $tag,
         ]);
 
@@ -361,9 +377,9 @@ class BindataRepo
         if (!$r) return false;
 
         # Check Whether BinData is Associated To File??
-        if ($this->_storeIsFile($r))
+        if ( $this->_isFile($r) )
             // Retrieve File From Storage
-            $r = $this->_storeRetriveAndInjectFile($r);
+            $r = $this->_loadFileIntoBinData($r);
         
         return $r;
     }
@@ -371,150 +387,50 @@ class BindataRepo
 
     // ...
 
-    function storage(BindataEntity $bindata)
+    /**
+     * Check Weather Given Entity Is File?
+     *
+     * @param iBindata $binData
+     *
+     * @return bool
+     */
+    private function _isFile(iBindata $binData)
     {
-        // TODO all storage interface through this proxy call
-        
-        // now only return bin data with injected file stream
-        return $this->_storeRetriveAndInjectFile($bindata);
-    }
-    
-
-    // Storage:
-
-    protected function _storeSaveBinDataFile(BindataEntity $binData)
-    {
-        /** @var UploadedFileInterface $file */
-        $file = $binData->getContent();
-
-        if (!$file instanceof UploadedFileInterface)
-            throw new \InvalidArgumentException('BinData Has No Contains File.');
-
-        if ($file->getError())
-            throw new \Exception('File has error.');
-
-
-        # Store file in storage
-
-        $gridFS   = $this->gateway->selectGridFSBucket();
-
-        $storageID = $binData->getIdentifier();
-        $resGrid   = $gridFS->openUploadStream(
-            $file->getClientFilename()
-            , array('_id' => $storageID)
+        return (
+            $binData->getMeta()->has('is_file')
+            || $binData->getContent() instanceof UploadedFileInterface
+            || $binData->getContent() instanceof DownloadFileInterface
         );
-
-        $resGrid    = new ResourceStream($resGrid);
-        $streamGrid = new Streamable($resGrid);
-        $size       = 0;
-        while (!$file->getStream()->eof()) {
-            $buff = $file->getStream()->read(2097152);
-            $streamGrid->write($buff);
-            $size += $streamGrid->getTransCount();
-        }
-
-
-        # Make Bin Data For Parent Meta Repository
-
-        $content = [
-            '_id'      => $storageID,
-            'filename' => $file->getClientFilename(),
-        ];
-
-
-        $binData = clone $binData;
-        $binData->setContent($content);
-        $binData->setMimeType($file->getClientMediaType());
-        $binData->getMeta()->import([
-            '__storage' => 'gridfs',
-            'is_file'  => true,
-            'filesize' => $size,
-        ]);
-
-        return $binData;
-    }
-
-    protected function _storeDeleteAssociatedFile(BindataEntity $binData)
-    {
-        $gridFS  = $this->gateway->selectGridFSBucket();
-        
-        $content = $binData->getContent();
-        if ($content instanceof DownloadFileInterface) {
-            // Assume that storage id is equal to identifier
-            // for now we have no other way to achieve this
-            
-            $hash   = $gridFS->getFileIdForStream($content->getFSResource());
-        } else {
-            /*
-             * Meta Content That Storage Write
-             *
-             * [_id] => MongoDB\BSON\ObjectID,
-             * [filename] => Björk - All is full of love.mp3
-             */
-            $metaStorageData = \Poirot\Std\cast($content)->toArray();
-            if (!isset($metaStorageData['_id']))
-                throw new \Exception('Mismatch Bindata Filetype.');
-            
-            $hash = $metaStorageData['_id'];
-        }
-        
-        
-        try {
-            $gridFS->delete($hash);
-        } catch (FileNotFoundException $e) {
-            return false;
-        }
-
-        return true;
     }
 
     /**
-     * @return iBindata
-     * @throws \Exception
+     * @param Entity\BindataEntity $binDataEntity
+     * @return Entity\BindataEntity
      */
-    private function _storeRetriveAndInjectFile(BindataEntity $binData)
+    private function _loadFileIntoBinData($binDataEntity)
     {
-        if (!$this->_storeIsFile($binData))
-            throw new \InvalidArgumentException('Associated BinData is not a file.');
+        // Document From Bindata persist
+        // will contains content.__storage_id
+        // open file from storage with given id
+        $content  = $binDataEntity->getContent();
+        $resource = $this->storage->open($content['__storage_id']);
 
-
-        if ($binData->getContent() instanceof UploadedFileInterface)
-            // The File is associated with bin meta content
-            return $binData;
-
-        /*
-         * Meta Content That Storage Write
-         *
-         * [_id] => MongoDB\BSON\ObjectID,
-         * [filename] => Björk - All is full of love.mp3
-         */
-        $metaStorageData = \Poirot\Std\cast($binData->getContent())->toArray();
-
-        $gridFS   = $this->gateway->selectGridFSBucket();
-        try {
-            $res      = $gridFS->openDownloadStream($metaStorageData['_id']);
-        } catch (\MongoDB\GridFS\Exception\FileNotFoundException $e) {
-            // New Tagged Version Of File May Deleted The Resource.
-            throw new \RuntimeException('File Not Found.');
-        }
-        
         // Determine the file is retrieved from storage itself
         $content = new DownloadFile(array(
-            'stream' => $res,
-            'name'   => $metaStorageData['filename'],
-            'type'   => $binData->getMimeType(),
-            'size'   => $binData->getMeta()->get('filesize'),
+            'stream' => $resource,
+            'name'   => $binDataEntity->getMeta()->get('filename'),
+            'type'   => $binDataEntity->getMimeType(),
+            'size'   => $binDataEntity->getMeta()->get('filesize'),
             'error'  => 0,
         ));
 
-        
-        $binData = clone $binData;
-        $binData->setContent($content);
-        return $binData;
+
+        $binDataEntity->setContent($content);
+        return $binDataEntity;
     }
 
-    private function _storeIsFile(BindataEntity $binData)
+    private function _wrapFileLoaderIterator(Cursor $cursor)
     {
-        return ( $binData->getMeta()->has('is_file') );
+        return new BindataResultSet($this->storage, $cursor);
     }
 }
