@@ -10,14 +10,6 @@ use Poirot\Router\BuildRouterStack;
 use Poirot\Router\Interfaces\iRouterStack;
 use Poirot\Std\Interfaces\Struct\iDataEntity;
 
-/*
-Response:
-The status_code is 200 for a successful request,
-403 when rate limited,
-503 for temporary unavailability,
-404 to indicate not-found responses,
-and 400 for all other invalid requests or responses.
-*/
 
 class Module implements Sapi\iSapiModule
     , Sapi\Module\Feature\iFeatureModuleInitModuleManager

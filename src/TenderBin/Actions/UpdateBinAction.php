@@ -107,7 +107,12 @@ class UpdateBinAction
                 $updatedBin->setMeta($origMeta);
             }
 
-            __(new Entity\BindataValidate($updatedBin))->assertValidate();
+
+            $validatorConfig = $this->sapi()->config()
+                ->get(\Module\TenderBin\Module::CONF_KEY);
+
+            __(new Entity\BindataValidate($updatedBin, $validatorConfig['validator']))
+                ->assertValidate();
 
         } catch (exUnexpectedValue $e)
         {

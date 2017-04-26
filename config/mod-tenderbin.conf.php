@@ -1,7 +1,13 @@
 <?php
-use Module\OAuth2Client\Actions\ServiceAssertTokenAction;
-
 return [
+
+    \Module\TenderBin\Module::CONF_KEY => [
+        'validator' => [
+            'allowed_mime_types' => ['image/*', ],
+            'denied_mime_types'  => ['*', ],
+        ],
+    ],
+
 
     ## ----------------------------------- ##
     ## OAuth2Client Module Must Configured ##

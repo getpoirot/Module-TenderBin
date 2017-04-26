@@ -13,13 +13,34 @@ class BindataValidate
     protected $entity;
 
 
+    protected $allowed_mime_types = [
+        '*'
+    ];
+
+    protected $denied_mime_types = [
+        // 'image/*'
+    ];
+
+
     /**
      * Construct
+     *
+     * $options:
+     * [
+     *    'allowed_mime_types' => 'images/*',
+     *    'denied_mime_types'  => '*',
+     * ]
+     *
      * @param iBindata $entity
+     * @param array    $options
+     *
      */
-    function __construct(iBindata $entity = null)
+    function __construct(iBindata $entity = null, array $options = null)
     {
         $this->entity = $entity;
+
+        foreach ($options as $key => $val)
+            $this->{$key} = $val;
     }
 
 
@@ -50,12 +71,80 @@ class BindataValidate
             if ($file->getError())
                 $exceptions[] = new exUnexpectedValue('Error Uploading File; The File Not Received.', 'content');
 
+            $mimeType = $content->getClientMediaType();
+
         } else {
-            if (!$this->entity->getMimeType())
+            if (! $this->entity->getMimeType() )
                 $exceptions[] = new exUnexpectedValue('Parameter %s is required.', 'MimeType');
+
+            $mimeType = $this->entity->getMimeType();
         }
 
 
+        $exceptions += $this->_assertMimeType($mimeType);
+
         return $exceptions;
+    }
+
+    /**
+     * Check Given Mime Type Is Allowed?
+     *
+     * @param $mimeType
+     *
+     * @return exUnexpectedValue []
+     */
+    private function _assertMimeType($mimeType)
+    {
+        $r = [];
+
+        if (in_array($mimeType, $this->denied_mime_types)) {
+            // Exactly This Mime Type Is Denied For Upload ...
+            $r[] = new exUnexpectedValue(sprintf('Mime Type (%s) Not Allowed.', $mimeType));
+            return $r;
+        }
+
+
+
+        $_f__checkMimeTypesInList = function (array $mimesList, $against)
+        {
+            $exMimeType = explode('/', $against);
+
+            $flag = (empty($mimesList)) ? true : false;
+
+            foreach ($mimesList as $mimeDef)
+            {
+                if ( $flag )
+                    break;
+
+                foreach (explode('/', $mimeDef) as $i => $v) {
+                    if ($v == '*')
+                        // Skip This mimeType Definition Part, try next ...
+                        continue;
+
+                    if (isset($exMimeType[$i]) && strtolower($v) === strtolower($exMimeType[$i]))
+                        $flag = true;
+                }
+            }
+
+            return $flag;
+        };
+
+
+        // Check Allowed MimeTypes
+
+        if (! $_f__checkMimeTypesInList($this->allowed_mime_types, $mimeType)) {
+            $r[] = new exUnexpectedValue(sprintf('Mime Type (%s) Not Allowed.', $mimeType));
+            return $r;
+        }
+
+        // Check Denied MimeTypes
+
+        if ($_f__checkMimeTypesInList($this->denied_mime_types, $mimeType)) {
+            $r[] = new exUnexpectedValue(sprintf('Mime Type (%s) Not Allowed.', $mimeType));
+            return $r;
+        }
+
+
+        return $r;
     }
 }

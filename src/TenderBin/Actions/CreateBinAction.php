@@ -58,7 +58,12 @@ class CreateBinAction
             // Set Custom Object Identifier if it given.
             $entityBindata->setIdentifier($custom_uid);
 
-            __(new Entity\BindataValidate($entityBindata))->assertValidate();
+
+            $validatorConfig = $this->sapi()->config()
+                ->get(\Module\TenderBin\Module::CONF_KEY);
+
+            __(new Entity\BindataValidate($entityBindata, $validatorConfig['validator']))
+                ->assertValidate();
 
         } catch (exUnexpectedValue $e)
         {
