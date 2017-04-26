@@ -89,4 +89,32 @@ abstract class aAction
         }
 
     }
+
+    /**
+     * Build OwnerObject From Token
+     *
+     * @param iEntityAccessToken $token
+     *
+     * @return OwnerObject
+     */
+    protected function buildOwnerObjectFromToken($token = null)
+    {
+        if (!$token instanceof iEntityAccessToken)
+            return null;
+
+
+        $clientIdentifier = $token->getClientIdentifier();
+
+        // Check Client Identifier Aliases:
+        $conf  = $this->sapi()->config()->get(\Module\TenderBin\Module::CONF_KEY);
+        $conf  = $conf['aliases_client'];
+        while(isset($conf[$clientIdentifier]))
+            $clientIdentifier = $conf[$clientIdentifier];
+
+
+        $r = new OwnerObject;
+        $r->setRealm($clientIdentifier);
+        $r->setUid($token->getOwnerIdentifier());
+        return $r;
+    }
 }

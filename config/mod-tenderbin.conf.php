@@ -6,6 +6,9 @@ return [
             'allowed_mime_types' => ['image/*', ],
             'denied_mime_types'  => ['*', ],
         ],
+        'aliases_client' => [
+            // 'client_id_alias' => 'client_id',
+        ],
     ],
 
 

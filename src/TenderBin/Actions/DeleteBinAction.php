@@ -53,7 +53,7 @@ class DeleteBinAction
         // has user access to delete content?
         $this->assertAccessPermissionOnBindata(
             $binData
-            , \Module\TenderBin\buildOwnerObjectFromToken($token)
+            , $this->buildOwnerObjectFromToken($token)
             , true // even if its not protected
         );
 
