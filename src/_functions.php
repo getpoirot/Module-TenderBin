@@ -1,25 +1,55 @@
 <?php
 namespace Module\TenderBin
 {
-    use Module\TenderBin\Model\Entity\Bindata\OwnerObject;
-    use Poirot\OAuth2\Interfaces\Server\Repository\iEntityAccessToken;
+    use Module\Foundation\Actions\IOC;
+    use Module\TenderBin\Interfaces\Model\iBindata;
+
 
     /**
-     * Build OwnerObject From Token
+     * Build Prepared Array For Response
      *
-     * @param iEntityAccessToken $token
+     * @param iBindata $binData
      *
-     * @return OwnerObject
+     * @return array
      */
-    function buildOwnerObjectFromToken($token = null)
+    function toResponseArrayFromBinEntity(iBindata $binData)
     {
-        if (!$token instanceof iEntityAccessToken)
-            return null;
+        if ($expiration = $binData->getDatetimeExpiration()) {
+            $currDateTime   = new \DateTime();
+            $currDateTime   = $currDateTime->getTimestamp();
+            $expireDateTime = $expiration->getTimestamp();
+
+            $expiration     = $expireDateTime - $currDateTime;
+        }
 
 
-        $r = new OwnerObject;
-        $r->setRealm($token->getClientIdentifier());
-        $r->setUid($token->getOwnerIdentifier());
+        $r = [
+            'bindata' => [
+                'hash'           => (string) $binData->getIdentifier(),
+                'title'          => $binData->getTitle(),
+                'content_type'   => $binData->getMimeType(),
+                'expiration'     => $expiration,
+                'is_protected'   => $binData->isProtected(),
+
+                'meta'           => \Poirot\Std\cast($binData->getMeta())->toArray(function($_, $k) {
+                    return substr($k, 0, 2) == '__'; // filter specific options
+                }),
+
+                'version'      => [
+                    'subversion_of' => ($v = $binData->getVersion()->getSubversionOf()) ? [
+                        'bindata' => [
+                            'uid' => ( $v ) ? (string) $v : null,
+                        ],
+                        '_link' => ( $v ) ? (string) IOC::url(
+                            'main/tenderbin/resource/'
+                            , array('resource_hash' => (string) $v)
+                        ) : null,
+                    ] : null,
+                    'tag' => $binData->getVersion()->getTag(),
+                ],
+            ],
+        ];
+
         return $r;
-    };
+    }
 }

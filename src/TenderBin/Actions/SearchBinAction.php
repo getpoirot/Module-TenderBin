@@ -74,7 +74,7 @@ class SearchBinAction
         # Build Expression Query Term
 
         // Search Bins Belong To This Owner Determine By Token
-        $q['owner_identifier'] = \Module\TenderBin\buildOwnerObjectFromToken($token);
+        $q['owner_identifier'] = $this->buildOwnerObjectFromToken($token);
         $expression = \Module\MongoDriver\parseExpressionFromArray( $q
             , ['meta', 'mime_type', 'version', 'owner_identifier']
             , 'allow' );
@@ -102,31 +102,7 @@ class SearchBinAction
         $items = [];
         /** @var iBindata $bin */
         foreach ($bins as $bin) {
-            $items[] = [
-                'bindata' => [
-                    'uid'          => (string) $bin->getIdentifier(),
-                    'title'        => $bin->getTitle(),
-                    'mime_type'    => $bin->getMimeType(),
-                    'is_protected' => $bin->isProtected(),
-
-                    'meta'         => \Poirot\Std\cast($bin->getMeta())->toArray(function($_, $k) {
-                        return substr($k, 0, 2) == '__'; // filter specific options
-                    }),
-
-                    'version'      => [
-                        'subversion_of' => ($v = (string) $bin->getVersion()->getSubversionOf()) ? [
-                            'bindata' => [
-                                'uid' => ( $v ) ? $v : null,
-                            ],
-                            '_link' => ( $v ) ? (string) IOC::url(
-                                'main/tenderbin/resource/'
-                                , array('resource_hash' => (string) $v)
-                            ) : null,
-                        ] : null,
-                        'tag' => $bin->getVersion()->getTag(),
-                    ],
-                ],
-
+            $items[] = \Module\TenderBin\toResponseArrayFromBinEntity($bin) + [
                 '_link' => (string) IOC::url(
                     'main/tenderbin/resource/'
                     , array('resource_hash' => (string) $bin->getIdentifier())

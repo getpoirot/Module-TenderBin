@@ -54,7 +54,7 @@ class CreateBinAction
         {
             $entityBindata  = new Entity\BindataEntity($hydrateBindata);
             // Determine Owner Identifier From Token
-            $entityBindata->setOwnerIdentifier( \Module\TenderBin\buildOwnerObjectFromToken($token) );
+            $entityBindata->setOwnerIdentifier( $this->buildOwnerObjectFromToken($token) );
             // Set Custom Object Identifier if it given.
             $entityBindata->setIdentifier($custom_uid);
 
@@ -78,44 +78,14 @@ class CreateBinAction
 
         # Build Response
 
-        if ($expiration = $r->getDatetimeExpiration()) {
-            $currDateTime   = new \DateTime();
-            $currDateTime   = $currDateTime->getTimestamp();
-            $expireDateTime = $expiration->getTimestamp();
+        $result = \Module\TenderBin\toResponseArrayFromBinEntity($r)
+            + array (
+                '_link' => (string) IOC::url(
+                    'main/tenderbin/resource/'
+                    , array('resource_hash' => $r->getIdentifier())
+                ),
+            );
 
-            $expiration     = $expireDateTime - $currDateTime;
-        }
-
-        $result = array(
-            'bindata' => [
-                'hash'           => (string) $r->getIdentifier(),
-                'title'          => $r->getTitle(),
-                'content_type'   => $r->getMimeType(),
-                'expiration'     => $expiration,
-                'is_protected'   => $r->isProtected(),
-
-                'meta'           => \Poirot\Std\cast($r->getMeta())->toArray(function($_, $k) {
-                    return substr($k, 0, 2) == '__'; // filter specific options
-                }),
-
-                'version'      => [
-                    'subversion_of' => ($v = $r->getVersion()->getSubversionOf()) ? [
-                        'bindata' => [
-                            'uid' => ( $v ) ? (string) $v : null,
-                        ],
-                        '_link' => ( $v ) ? (string) IOC::url(
-                            'main/tenderbin/resource/'
-                            , array('resource_hash' => (string) $v)
-                        ) : null,
-                    ] : null,
-                    'tag' => $r->getVersion()->getTag(),
-                ],
-            ],
-            '_link'            => (string) IOC::url(
-                'main/tenderbin/resource/'
-                , array('resource_hash' => $r->getIdentifier())
-            ),
-        );
 
         return array(
             ListenerDispatch::RESULT_DISPATCH => $result,

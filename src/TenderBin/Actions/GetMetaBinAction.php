@@ -55,7 +55,7 @@ class GetMetaBinAction
         // has user access to edit content?
         $this->assertAccessPermissionOnBindata(
             $binData
-            , \Module\TenderBin\buildOwnerObjectFromToken($token)
+            , $this->buildOwnerObjectFromToken($token)
             , false // just if its not protected resource
         );
 
@@ -95,34 +95,18 @@ class GetMetaBinAction
          */
         return function ($binData = null, $versions = null)
         {
-            if ($expiration = $binData->getDatetimeExpiration()) {
-                $currDateTime   = new \DateTime();
-                $currDateTime   = $currDateTime->getTimestamp();
-                $expireDateTime = $expiration->getTimestamp();
-
-                $expiration     = $expireDateTime - $currDateTime;
-            }
-
             return [
-                ListenerDispatch::RESULT_DISPATCH => [
-                    'bindata' => [
-                        'title'        => $binData->getTitle(),
-                        'mime_type'    => $binData->getMimeType(),
-                        'expiration'   => $expiration,
-                        'is_protected' => (boolean) $binData->isProtected(),
-                        'meta'         => \Poirot\Std\cast($binData->getMeta())->toArray(function($_, $k) {
-                            return substr($k, 0, 2) === '__'; // filter system specific meta data
-                        }),
-                        'versions'     => $versions,
+                ListenerDispatch::RESULT_DISPATCH => \Module\TenderBin\toResponseArrayFromBinEntity($binData)
+                    + ['versions' => $versions]
+                    + [
+                        '_link' => (string) IOC::url(
+                            'main/tenderbin/resource/'
+                            , array('resource_hash' => (string) $binData->getIdentifier())
+                        ),
+                        '_self'      => [
+                            'hash' => (string) $binData->getIdentifier(),
+                        ],
                     ],
-                    '_link' => (string) IOC::url(
-                        'main/tenderbin/resource/'
-                        , array('resource_hash' => (string) $binData->getIdentifier())
-                    ),
-                    '_self'      => [
-                        'hash' => (string) $binData->getIdentifier(),
-                    ],
-                ],
             ];
         };
     }
