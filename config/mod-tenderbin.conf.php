@@ -3,8 +3,8 @@ return [
 
     \Module\TenderBin\Module::CONF_KEY => [
         'validator' => [
-            'allowed_mime_types' => ['image/*', ],
-            'denied_mime_types'  => ['*', ],
+            // 'allowed_mime_types' => ['image/*', ],
+            //'denied_mime_types'  => ['*', ],
         ],
         'aliases_client' => [
             // 'client_id_alias' => 'client_id',

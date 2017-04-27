@@ -103,7 +103,7 @@ class StorageGridFS
     {
         $gridFS   = $this->gateway->selectGridFSBucket();
         try {
-            $res      = $gridFS->openDownloadStream($storageId);
+            $res = $gridFS->openDownloadStream($storageId);
         } catch (\MongoDB\GridFS\Exception\FileNotFoundException $e) {
             // New Tagged Version Of File May Deleted The Resource.
             throw new \RuntimeException('File Not Found.');

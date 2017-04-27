@@ -109,20 +109,18 @@ class BindataValidate
         {
             $exMimeType = explode('/', $against);
 
-            $flag = (empty($mimesList)) ? true : false;
-
+            $flag = null; // mean we have no list
             foreach ($mimesList as $mimeDef)
             {
-                if ( $flag )
-                    break;
-
                 foreach (explode('/', $mimeDef) as $i => $v) {
                     if ($v == '*')
                         // Skip This mimeType Definition Part, try next ...
                         continue;
 
+                    $flag = false; // mean we have a list
+
                     if (isset($exMimeType[$i]) && strtolower($v) === strtolower($exMimeType[$i]))
-                        $flag = true;
+                        return $against; // mean we have given mime in list
                 }
             }
 
@@ -132,14 +130,14 @@ class BindataValidate
 
         // Check Allowed MimeTypes
 
-        if (! $_f__checkMimeTypesInList($this->allowed_mime_types, $mimeType)) {
+        if (false === $_f__checkMimeTypesInList($this->allowed_mime_types, $mimeType) ) {
             $r[] = new exUnexpectedValue(sprintf('Mime Type (%s) Not Allowed.', $mimeType));
             return $r;
         }
 
         // Check Denied MimeTypes
 
-        if ($_f__checkMimeTypesInList($this->denied_mime_types, $mimeType)) {
+        if ($mimeType === $_f__checkMimeTypesInList($this->denied_mime_types, $mimeType)) {
             $r[] = new exUnexpectedValue(sprintf('Mime Type (%s) Not Allowed.', $mimeType));
             return $r;
         }
