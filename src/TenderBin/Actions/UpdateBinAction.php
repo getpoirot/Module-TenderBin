@@ -10,7 +10,7 @@ use Module\TenderBin\Storage\UploadFile;
 use Poirot\Application\Sapi\Server\Http\ListenerDispatch;
 use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
 use Poirot\Http\Interfaces\iHttpRequest;
-use Poirot\OAuth2\Interfaces\Server\Repository\iEntityAccessToken;
+use Poirot\OAuth2Client\Interfaces\iAccessToken;
 use Poirot\Std\Exceptions\exUnexpectedValue;
 use Poirot\Std\Hydrator\HydrateGetters;
 
@@ -41,8 +41,8 @@ class UpdateBinAction
      *
      * - if version exists delete current version and replace new one
      *
-     * @param string             $resource_hash
-     * @param iEntityAccessToken $token
+     * @param string       $resource_hash
+     * @param iAccessToken $token
      *
      * @return array
      * @throws \Exception

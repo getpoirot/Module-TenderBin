@@ -7,7 +7,7 @@ use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Poirot\Application\Sapi\Server\Http\ListenerDispatch;
 use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
 use Poirot\Http\Interfaces\iHttpRequest;
-use Poirot\OAuth2\Interfaces\Server\Repository\iEntityAccessToken;
+use Poirot\OAuth2Client\Interfaces\iAccessToken;
 
 
 class SearchBinAction
@@ -34,7 +34,7 @@ class SearchBinAction
     /**
      * Search and Filter Stored BinData
      *
-     * @param iEntityAccessToken $token
+     * @param iAccessToken $token
      *
      *
      * Query Term:

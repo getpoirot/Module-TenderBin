@@ -12,7 +12,7 @@ use Poirot\Http\HttpResponse;
 use Poirot\Http\Interfaces\iHeader;
 use Poirot\Http\Interfaces\iHttpRequest;
 use Poirot\Http\Interfaces\iHttpResponse;
-use Poirot\OAuth2\Interfaces\Server\Repository\iEntityAccessToken;
+use Poirot\OAuth2Client\Interfaces\iAccessToken;
 use Poirot\Stream\Interfaces\iStreamable;
 use Poirot\Stream\Psr\StreamBridgeFromPsr;
 use Poirot\Stream\Streamable\SLimitSegment;
@@ -48,8 +48,8 @@ class RenderBinAction
     /**
      * Render Bin Content Into Browser
      *
-     * @param string             $resource_hash
-     * @param iEntityAccessToken $token
+     * @param string       $resource_hash
+     * @param iAccessToken $token
      *
      * @return array
      * @throws \Exception

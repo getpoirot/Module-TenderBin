@@ -5,7 +5,7 @@ use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Model\Entity\Bindata\OwnerObject;
 use Poirot\Application\Exception\exAccessDenied;
 use Poirot\Http\Interfaces\iHttpRequest;
-use Poirot\OAuth2\Interfaces\Server\Repository\iEntityAccessToken;
+use Poirot\OAuth2Client\Interfaces\iAccessToken;
 
 
 /**
@@ -38,14 +38,14 @@ abstract class aAction
     /**
      * Assert Token
      *
-     * @param iEntityAccessToken $token
+     * @param iAccessToken $token
      *
      * @throws exAccessDenied
      */
     protected function assertTokenByOwnerAndScope($token)
     {
         # Validate Access Token
-        \Module\OAuth2Client\validateGivenToken(
+        \Module\OAuth2Client\Assertion\validateAccessToken(
             $token
             , (object) ['mustHaveOwner' => $this->tokenMustHaveOwner, 'scopes' => $this->tokenMustHaveScopes ]
         );
@@ -93,20 +93,20 @@ abstract class aAction
     /**
      * Build OwnerObject From Token
      *
-     * @param iEntityAccessToken $token
+     * @param iAccessToken $token
      *
      * @return OwnerObject
      */
     protected function buildOwnerObjectFromToken($token = null)
     {
-        if (!$token instanceof iEntityAccessToken)
+        if (!$token instanceof iAccessToken)
             return null;
 
 
         $clientIdentifier = $token->getClientIdentifier();
 
         // Check Client Identifier Aliases:
-        $conf  = $this->sapi()->config()->get(\Module\TenderBin\Module::CONF_KEY);
+        $conf  = $this->sapi()->config()->get( \Module\TenderBin\Module::CONF_KEY );
         $conf  = $conf['aliases_client'];
         while(isset($conf[$clientIdentifier]))
             $clientIdentifier = $conf[$clientIdentifier];

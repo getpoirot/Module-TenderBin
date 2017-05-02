@@ -6,7 +6,7 @@ use Module\Foundation\Actions\IOC;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Poirot\Application\Sapi\Server\Http\ListenerDispatch;
 use Poirot\Http\Interfaces\iHttpRequest;
-use Poirot\OAuth2\Interfaces\Server\Repository\iEntityAccessToken;
+use Poirot\OAuth2Client\Interfaces\iAccessToken;
 use Poirot\Std\Exceptions\exUnexpectedValue;
 
 
@@ -35,12 +35,12 @@ class CreateBinAction
      * Create New Bin and Persist
      *
      * @param string                  $custom_uid
-     * @param iEntityAccessToken|null $token
+     * @param iAccessToken|null $token
      *
      * @return array
      * @throws \Exception
      */
-    function __invoke($custom_uid = null, iEntityAccessToken $token = null)
+    function __invoke($custom_uid = null, iAccessToken $token = null)
     {
         # Assert Token
         $this->assertTokenByOwnerAndScope($token);

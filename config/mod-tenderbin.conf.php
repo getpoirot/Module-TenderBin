@@ -17,7 +17,7 @@ return [
     ## to assert tokens ...                ##
     ## ----------------------------------- ##
 
-    \Module\OAuth2Client\Module::CONF_KEY => [
+    \Module\OAuth2Client\Module::CONF => [
         // Configure module ....
     ],
 
