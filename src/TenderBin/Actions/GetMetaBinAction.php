@@ -45,11 +45,16 @@ class GetMetaBinAction
      */
     function __invoke($resource_hash = null, $token = null)
     {
-        if (false === $binData = $this->repoBins->findOneByHash($resource_hash))
-            throw new exResourceNotFound(sprintf(
-                'Resource (%s) not found.'
-                , $resource_hash
-            ));
+        try {
+            if (false === $binData = $this->repoBins->findOneByHash($resource_hash))
+                throw new exResourceNotFound(sprintf(
+                    'Resource (%s) not found.'
+                    , $resource_hash
+                ));
+        } catch (\Exception $e) {
+            throw new exResourceNotFound;
+        }
+
 
 
         // has user access to edit content?

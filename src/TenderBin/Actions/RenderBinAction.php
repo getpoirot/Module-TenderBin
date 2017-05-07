@@ -58,11 +58,15 @@ class RenderBinAction
     {
         $_get = ParseRequestData::_($this->request)->parseQueryParams();
 
-        if (isset($_get['ver'])) {
-            $version = $_get['ver'];
-            $binData = $this->repoBins->findATaggedSubVerOf($resource_hash, $version);
-        } else {
-            $binData = $this->repoBins->findOneByHash($resource_hash);
+        try {
+            if (isset($_get['ver'])) {
+                $version = $_get['ver'];
+                $binData = $this->repoBins->findATaggedSubVerOf($resource_hash, $version);
+            } else {
+                $binData = $this->repoBins->findOneByHash($resource_hash);
+            }
+        } catch (\Exception $e) {
+            throw new exResourceNotFound;
         }
 
         if (false === $binData)
