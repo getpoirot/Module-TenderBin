@@ -50,7 +50,7 @@ return [
 
                 'collection' => [
                     // query on which collection
-                    'name' => 'bins',
+                    'name' => 'tenderbin.bins',
                     // which client to connect and query with
                     'client' => 'master',
                     // ensure indexes
