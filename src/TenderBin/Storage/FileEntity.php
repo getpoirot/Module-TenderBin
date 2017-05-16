@@ -3,6 +3,7 @@ namespace Module\TenderBin\Storage;
 
 use Poirot\Std\Struct\aValueObject;
 
+
 class FileEntity
     extends aValueObject
 {

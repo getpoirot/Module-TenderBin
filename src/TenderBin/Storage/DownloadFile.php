@@ -4,6 +4,7 @@ namespace Module\TenderBin\Storage;
 use Module\TenderBin\Interfaces\DownloadFileInterface;
 use Poirot\Psr7\UploadedFile;
 
+
 class DownloadFile 
     extends UploadedFile
     implements DownloadFileInterface

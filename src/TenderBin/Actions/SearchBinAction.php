@@ -2,9 +2,9 @@
 namespace Module\TenderBin\Actions;
 
 use Module\Foundation\Actions\IOC;
+use Module\HttpFoundation\Events\Listener\ListenerDispatch;
 use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
-use Poirot\Application\Sapi\Server\Http\ListenerDispatch;
 use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
 use Poirot\Http\Interfaces\iHttpRequest;
 use Poirot\OAuth2Client\Interfaces\iAccessToken;

@@ -1,8 +1,8 @@
 <?php
 namespace Module\TenderBin\Interfaces\Model\Repo;
 
-
 use Module\TenderBin\Interfaces\Model\iBindata;
+
 
 interface iRepoBindata
 {

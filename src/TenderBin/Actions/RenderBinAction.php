@@ -1,11 +1,11 @@
 <?php
 namespace Module\TenderBin\Actions;
 
+use Module\HttpFoundation\Events\Listener\ListenerDispatch;
 use Module\TenderBin\Exception\exResourceNotFound;
 use Module\TenderBin\Interfaces\DownloadFileInterface;
 use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
-use Poirot\Application\Sapi\Server\Http\ListenerDispatch;
 use Poirot\Http\Header\FactoryHttpHeader;
 use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
 use Poirot\Http\HttpResponse;

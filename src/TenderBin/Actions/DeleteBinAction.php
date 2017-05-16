@@ -1,9 +1,9 @@
 <?php
 namespace Module\TenderBin\Actions;
 
+use Module\HttpFoundation\Events\Listener\ListenerDispatch;
 use Module\TenderBin\Exception\exResourceNotFound;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
-use Poirot\Application\Sapi\Server\Http\ListenerDispatch;
 use Poirot\Http\Interfaces\iHttpRequest;
 use Poirot\OAuth2Client\Interfaces\iAccessToken;
 

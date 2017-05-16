@@ -2,10 +2,10 @@
 namespace Module\TenderBin\Actions;
 
 use Module\Foundation\Actions\IOC;
+use Module\HttpFoundation\Events\Listener\ListenerDispatch;
 use Module\TenderBin\Exception\exResourceNotFound;
 use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
-use Poirot\Application\Sapi\Server\Http\ListenerDispatch;
 use Poirot\Http\Header\FactoryHttpHeader;
 use Poirot\Http\HttpResponse;
 use Poirot\Http\Interfaces\iHeaders;
