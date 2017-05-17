@@ -32,13 +32,13 @@ class RenderBinAction
     /**
      * ValidatePage constructor.
      *
-     * @param iHttpRequest  $request  @IoC /
-     * @param iHttpResponse $response @IoC /
-     * @param iRepoBindata  $repoBins @IoC /module/tenderbin/services/repository/Bindata
+     * @param iHttpRequest  $httpRequest @IoC /HttpRequest
+     * @param iHttpResponse $response    @IoC /HttpResponse
+     * @param iRepoBindata  $repoBins    @IoC /module/tenderbin/services/repository/Bindata
      */
-    function __construct(iHttpRequest $request, iHttpResponse $response, iRepoBindata $repoBins)
+    function __construct(iHttpRequest $httpRequest, iHttpResponse $response, iRepoBindata $repoBins)
     {
-        parent::__construct($request);
+        parent::__construct($httpRequest);
 
         $this->repoBins = $repoBins;
         $this->response = $response;

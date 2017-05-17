@@ -16,12 +16,12 @@ class CleanupBinsAction
     /**
      * ValidatePage constructor.
      *
-     * @param iHttpRequest $request  @IoC /
-     * @param iRepoBindata $repoBins @IoC /module/tenderbin/services/repository/Bindata
+     * @param iHttpRequest $httpRequest @IoC /HttpRequest
+     * @param iRepoBindata $repoBins    @IoC /module/tenderbin/services/repository/Bindata
      */
-    function __construct(iHttpRequest $request, iRepoBindata $repoBins)
+    function __construct(iHttpRequest $httpRequest, iRepoBindata $repoBins)
     {
-        parent::__construct($request);
+        parent::__construct($httpRequest);
 
         $this->repoBins = $repoBins;
     }
