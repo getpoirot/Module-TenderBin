@@ -1,7 +1,6 @@
 <?php
 namespace Module\TenderBin\Actions;
 
-use Module\Foundation\Actions\IOC;
 use Module\HttpFoundation\Events\Listener\ListenerDispatch;
 use Module\TenderBin\Exception\exResourceNotFound;
 use Module\TenderBin\Interfaces\Model\iBindata;
@@ -74,7 +73,7 @@ class GetMetaBinAction
                 'bindata' => [
                     'uid' => $v = (string) $sv->getIdentifier(),
                 ],
-                '_link' => ( $v ) ? (string) IOC::url(
+                '_link' => ( $v ) ? (string) \Module\HttpFoundation\Module::url(
                     'main/tenderbin/resource/'
                     , array('resource_hash' => (string) $v)
                 ) : null,
@@ -104,7 +103,7 @@ class GetMetaBinAction
                 ListenerDispatch::RESULT_DISPATCH => \Module\TenderBin\toResponseArrayFromBinEntity($binData)
                     + ['versions' => $versions]
                     + [
-                        '_link' => (string) IOC::url(
+                        '_link' => (string) \Module\HttpFoundation\Module::url(
                             'main/tenderbin/resource/'
                             , array('resource_hash' => (string) $binData->getIdentifier())
                         ),

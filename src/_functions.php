@@ -1,7 +1,6 @@
 <?php
 namespace Module\TenderBin
 {
-    use Module\Foundation\Actions\IOC;
     use Module\TenderBin\Interfaces\Model\iBindata;
 
 
@@ -40,7 +39,7 @@ namespace Module\TenderBin
                         'bindata' => [
                             'uid' => ( $v ) ? (string) $v : null,
                         ],
-                        '_link' => ( $v ) ? (string) IOC::url(
+                        '_link' => ( $v ) ? (string) \Module\HttpFoundation\Module::url(
                             'main/tenderbin/resource/'
                             , array('resource_hash' => (string) $v)
                         ) : null,

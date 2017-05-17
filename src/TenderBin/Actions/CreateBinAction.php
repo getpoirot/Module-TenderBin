@@ -3,7 +3,6 @@ namespace Module\TenderBin\Actions;
 
 use Module\HttpFoundation\Events\Listener\ListenerDispatch;
 use Module\TenderBin\Model\Entity;
-use Module\Foundation\Actions\IOC;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Poirot\Http\Interfaces\iHttpRequest;
 use Poirot\OAuth2Client\Interfaces\iAccessToken;
@@ -80,7 +79,7 @@ class CreateBinAction
 
         $result = \Module\TenderBin\toResponseArrayFromBinEntity($r)
             + array (
-                '_link' => (string) IOC::url(
+                '_link' => (string) \Module\HttpFoundation\Module::url(
                     'main/tenderbin/resource/'
                     , array('resource_hash' => $r->getIdentifier())
                 ),

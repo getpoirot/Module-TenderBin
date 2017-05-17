@@ -3,7 +3,6 @@ namespace Module\TenderBin\Actions;
 
 use Module\HttpFoundation\Events\Listener\ListenerDispatch;
 use Module\TenderBin\Model\Entity;
-use Module\Foundation\Actions\IOC;
 use Module\TenderBin\Exception\exResourceNotFound;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Module\TenderBin\Storage\DownloadFile;
@@ -127,7 +126,7 @@ class UpdateBinAction
         # Build Response
 
         $result = \Module\TenderBin\toResponseArrayFromBinEntity($r) + array(
-            '_link'          => (string) IOC::url(
+            '_link'          => (string) \Module\HttpFoundation\Module::url(
                 'main/tenderbin/resource/'
                 , array('resource_hash' => $r->getIdentifier())
             ),

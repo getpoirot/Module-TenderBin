@@ -1,7 +1,6 @@
 <?php
 namespace Module\TenderBin\Actions;
 
-use Module\Foundation\Actions\IOC;
 use Module\HttpFoundation\Events\Listener\ListenerDispatch;
 use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
@@ -93,7 +92,7 @@ class SearchBinAction
         if (count($bins) > $limit) {
             array_pop($bins);                     // skip augmented content to determine has more?
             $nextOffset = $bins[count($bins)-1]; // retrieve the next from this offset (less than this)
-            $linkMore   = IOC::url(null);
+            $linkMore   = \Module\HttpFoundation\Module::url(null);
             $linkMore   = (string) $linkMore->uri()->withQuery('offset='.($nextOffset['bindata']['uid']).'&limit='.$limit);
         }
 
@@ -103,7 +102,7 @@ class SearchBinAction
         /** @var iBindata $bin */
         foreach ($bins as $bin) {
             $items[] = \Module\TenderBin\toResponseArrayFromBinEntity($bin) + [
-                '_link' => (string) IOC::url(
+                '_link' => (string) \Module\HttpFoundation\Module::url(
                     'main/tenderbin/resource/'
                     , array('resource_hash' => (string) $bin->getIdentifier())
                 ),
