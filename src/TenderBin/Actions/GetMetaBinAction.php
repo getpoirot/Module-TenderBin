@@ -73,7 +73,7 @@ class GetMetaBinAction
                 'bindata' => [
                     'uid' => $v = (string) $sv->getIdentifier(),
                 ],
-                '_link' => ( $v ) ? (string) \Module\HttpFoundation\Module::url(
+                '_link' => ( $v ) ? (string) \Module\HttpFoundation\Actions::url(
                     'main/tenderbin/resource/'
                     , array('resource_hash' => (string) $v)
                 ) : null,
@@ -103,7 +103,7 @@ class GetMetaBinAction
                 ListenerDispatch::RESULT_DISPATCH => \Module\TenderBin\toResponseArrayFromBinEntity($binData)
                     + ['versions' => $versions]
                     + [
-                        '_link' => (string) \Module\HttpFoundation\Module::url(
+                        '_link' => (string) \Module\HttpFoundation\Actions::url(
                             'main/tenderbin/resource/'
                             , array('resource_hash' => (string) $binData->getIdentifier())
                         ),

@@ -39,7 +39,7 @@ namespace Module\TenderBin
                         'bindata' => [
                             'uid' => ( $v ) ? (string) $v : null,
                         ],
-                        '_link' => ( $v ) ? (string) \Module\HttpFoundation\Module::url(
+                        '_link' => ( $v ) ? (string) \Module\HttpFoundation\Actions::url(
                             'main/tenderbin/resource/'
                             , array('resource_hash' => (string) $v)
                         ) : null,

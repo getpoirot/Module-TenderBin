@@ -79,7 +79,7 @@ class CreateBinAction
 
         $result = \Module\TenderBin\toResponseArrayFromBinEntity($r)
             + array (
-                '_link' => (string) \Module\HttpFoundation\Module::url(
+                '_link' => (string) \Module\HttpFoundation\Actions::url(
                     'main/tenderbin/resource/'
                     , array('resource_hash' => $r->getIdentifier())
                 ),

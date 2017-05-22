@@ -92,7 +92,7 @@ class SearchBinAction
         if (count($bins) > $limit) {
             array_pop($bins);                     // skip augmented content to determine has more?
             $nextOffset = $bins[count($bins)-1]; // retrieve the next from this offset (less than this)
-            $linkMore   = \Module\HttpFoundation\Module::url(null);
+            $linkMore   = \Module\HttpFoundation\Actions::url(null);
             $linkMore   = (string) $linkMore->uri()->withQuery('offset='.($nextOffset['bindata']['uid']).'&limit='.$limit);
         }
 
@@ -102,7 +102,7 @@ class SearchBinAction
         /** @var iBindata $bin */
         foreach ($bins as $bin) {
             $items[] = \Module\TenderBin\toResponseArrayFromBinEntity($bin) + [
-                '_link' => (string) \Module\HttpFoundation\Module::url(
+                '_link' => (string) \Module\HttpFoundation\Actions::url(
                     'main/tenderbin/resource/'
                     , array('resource_hash' => (string) $bin->getIdentifier())
                 ),
