@@ -76,19 +76,25 @@ class CreateBinAction
 
 
         # Build Response
+        $linkParams = [
+            'resource_hash' => $r->getIdentifier(), ];
+
+        if ( $r->getMeta()->has('is_file') )
+            $linkParams += [
+                'filename' => $r->getMeta()->get('filename'), ];
 
         $result = \Module\TenderBin\toResponseArrayFromBinEntity($r)
-            + array (
+            + [
                 '_link' => (string) \Module\HttpFoundation\Actions::url(
                     'main/tenderbin/resource/'
-                    , array('resource_hash' => $r->getIdentifier())
+                    , $linkParams
                 ),
-            );
+            ];
 
 
-        return array(
+        return [
             ListenerDispatch::RESULT_DISPATCH => $result,
-        );
+        ];
     }
 
 }

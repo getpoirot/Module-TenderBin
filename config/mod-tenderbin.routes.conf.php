@@ -6,7 +6,7 @@ return [
         'route'    => 'RouteHostname',
         'priority' => -10, // force host match before others.
         'options' => [
-            'criteria'    => 'storage.{{.+}}',
+            'criteria'    => 'storage.~.+~',
         ],
         'params'  => [
             ListenerDispatch::ACTIONS => [
@@ -18,7 +18,7 @@ return [
                  *    [1] => routes defined callable
                  *     ...
                  */
-                \Module\OAuth2Client\Actions\IOC::bareService()->AssertToken,
+                '/module/oauth2client/actions/AssertToken',
             ],
         ],
 
@@ -44,13 +44,13 @@ return [
             'create' => [
                 'route' => 'RouteMethodSegment',
                 'options' => [
-                    'criteria'    => '[/:custom_uid{{\w+}}]',
+                    'criteria'    => '</:custom_uid~\w+~>',
                     'method'      => 'POST',
                     'match_whole' => true,
                 ],
                 'params'  => [
                     ListenerDispatch::ACTIONS => [
-                        \Module\TenderBin\Actions\IOC::bareService()->createBinAction,
+                        '/module/tenderbin/actions/createBinAction',
                     ],
                 ],
             ],
@@ -63,7 +63,7 @@ return [
                 ],
                 'params'  => [
                     ListenerDispatch::ACTIONS => [
-                        \Module\TenderBin\Actions\IOC::bareService()->searchBinAction,
+                        '/module/tenderbin/actions/searchBinAction',
                     ],
                 ],
             ],
@@ -71,7 +71,7 @@ return [
             'resource' => [
                 'route' => 'RouteSegment',
                 'options' => [
-                    'criteria'    => '/:resource_hash{{\w+}}',
+                    'criteria'    => '/:resource_hash~\w+~</:filename~.+~>',
                     'match_whole' => false, // exactly match with this not trailing paths
                 ],
                 'routes' => [
@@ -84,7 +84,7 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::ACTIONS => [
-                                \Module\TenderBin\Actions\IOC::bareService()->getMetaBinAction,
+                                '/module/tenderbin/actions/getMetaBinAction',
                                 \Module\TenderBin\Actions\GetMetaBinAction::functorResponseGetInfoResult(),
                             ],
                         ],
@@ -97,7 +97,7 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::ACTIONS => [
-                                \Module\TenderBin\Actions\IOC::bareService()->getMetaBinAction,
+                                '/module/tenderbin/actions/getMetaBinAction',
                                 \Module\TenderBin\Actions\GetMetaBinAction::functorResponseHeadInfoResult(),
                             ],
                         ],
@@ -111,7 +111,7 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::ACTIONS => [
-                                \Module\TenderBin\Actions\IOC::bareService()->updateBinAction,
+                                '/module/tenderbin/actions/updateBinAction',
                             ],
                         ],
                     ],
@@ -123,7 +123,7 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::ACTIONS => [
-                                \Module\TenderBin\Actions\IOC::bareService()->deleteBinAction,
+                                '/module/tenderbin/actions/deleteBinAction',
                             ],
                         ],
                     ],
@@ -135,7 +135,7 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::ACTIONS => [
-                                \Module\TenderBin\Actions\IOC::bareService()->renderBinAction,
+                                '/module/tenderbin/actions/renderBinAction',
                             ],
                         ],
                     ],
