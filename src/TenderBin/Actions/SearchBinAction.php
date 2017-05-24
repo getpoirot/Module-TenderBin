@@ -4,6 +4,7 @@ namespace Module\TenderBin\Actions;
 use Module\HttpFoundation\Events\Listener\ListenerDispatch;
 use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
+use Module\TenderBin\Model\Entity\BindataEntity;
 use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
 use Poirot\Http\Interfaces\iHttpRequest;
 use Poirot\OAuth2Client\Interfaces\iAccessToken;
@@ -91,9 +92,10 @@ class SearchBinAction
         $linkMore = null;
         if (count($bins) > $limit) {
             array_pop($bins);                     // skip augmented content to determine has more?
+            /** @var BindataEntity $nextOffset */
             $nextOffset = $bins[count($bins)-1]; // retrieve the next from this offset (less than this)
             $linkMore   = \Module\HttpFoundation\Actions::url(null);
-            $linkMore   = (string) $linkMore->uri()->withQuery('offset='.($nextOffset['bindata']['uid']).'&limit='.$limit);
+            $linkMore   = (string) $linkMore->uri()->withQuery('offset='.($nextOffset->getIdentifier()).'&limit='.$limit);
         }
 
         # Build Response
@@ -101,12 +103,21 @@ class SearchBinAction
         $items = [];
         /** @var iBindata $bin */
         foreach ($bins as $bin) {
-            $items[] = \Module\TenderBin\toResponseArrayFromBinEntity($bin) + [
-                '_link' => (string) \Module\HttpFoundation\Actions::url(
-                    'main/tenderbin/resource/'
-                    , array('resource_hash' => (string) $bin->getIdentifier())
-                ),
-            ];
+            $linkParams = [
+                'resource_hash' => $bin->getIdentifier(), ];
+
+            if ( $bin->getMeta()->has('is_file') )
+                $linkParams += [
+                    'filename' => $bin->getMeta()->get('filename'), ];
+
+
+            $items[] = \Module\TenderBin\toResponseArrayFromBinEntity($bin)
+                + [
+                    '_link' => (string) \Module\HttpFoundation\Actions::url(
+                        'main/tenderbin/resource/'
+                        , $linkParams
+                    ),
+                ];
         }
 
 

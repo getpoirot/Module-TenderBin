@@ -69,13 +69,21 @@ class GetMetaBinAction
         $versions = array();
         /** @var iBindata $sv */
         foreach ($subVers as $sv) {
+            # Build Response
+            $linkParams = [
+                'resource_hash' => $sv->getIdentifier(), ];
+
+            if ( $sv->getMeta()->has('is_file') )
+                $linkParams += [
+                    'filename' => $sv->getMeta()->get('filename'), ];
+
             $versions[$sv->getVersion()->getTag()] = [
                 'bindata' => [
                     'uid' => $v = (string) $sv->getIdentifier(),
                 ],
                 '_link' => ( $v ) ? (string) \Module\HttpFoundation\Actions::url(
                     'main/tenderbin/resource/'
-                    , array('resource_hash' => (string) $v)
+                    , $linkParams
                 ) : null,
             ];
         }
@@ -99,13 +107,21 @@ class GetMetaBinAction
          */
         return function ($binData = null, $versions = null)
         {
+            # Build Response
+            $linkParams = [
+                'resource_hash' => $binData->getIdentifier(), ];
+
+            if ( $binData->getMeta()->has('is_file') )
+                $linkParams += [
+                    'filename' => $binData->getMeta()->get('filename'), ];
+
             return [
                 ListenerDispatch::RESULT_DISPATCH => \Module\TenderBin\toResponseArrayFromBinEntity($binData)
                     + ['versions' => $versions]
                     + [
                         '_link' => (string) \Module\HttpFoundation\Actions::url(
                             'main/tenderbin/resource/'
-                            , array('resource_hash' => (string) $binData->getIdentifier())
+                            , $linkParams
                         ),
                         '_self'      => [
                             'hash' => (string) $binData->getIdentifier(),

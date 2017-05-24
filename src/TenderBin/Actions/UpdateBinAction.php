@@ -124,13 +124,21 @@ class UpdateBinAction
 
 
         # Build Response
+        $linkParams = [
+            'resource_hash' => $r->getIdentifier(), ];
 
-        $result = \Module\TenderBin\toResponseArrayFromBinEntity($r) + array(
-            '_link'          => (string) \Module\HttpFoundation\Actions::url(
-                'main/tenderbin/resource/'
-                , array('resource_hash' => $r->getIdentifier())
-            ),
-        );
+        if ( $r->getMeta()->has('is_file') )
+            $linkParams += [
+                'filename' => $r->getMeta()->get('filename'), ];
+
+
+        $result = \Module\TenderBin\toResponseArrayFromBinEntity($r)
+            + [
+                '_link'          => (string) \Module\HttpFoundation\Actions::url(
+                    'main/tenderbin/resource/'
+                    , $linkParams
+                ),
+            ];
 
         return array(
             ListenerDispatch::RESULT_DISPATCH => $result,

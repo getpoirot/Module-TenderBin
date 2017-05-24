@@ -71,7 +71,7 @@ return [
             'resource' => [
                 'route' => 'RouteSegment',
                 'options' => [
-                    'criteria'    => '/:resource_hash~\w+~</:filename~.+~>',
+                    'criteria'    => '/:resource_hash~\w+~</:filename~.+/~>',
                     'match_whole' => false, // exactly match with this not trailing paths
                 ],
                 'routes' => [
