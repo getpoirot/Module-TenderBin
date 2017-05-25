@@ -130,11 +130,11 @@ class RenderBinAction
             // HTTP/1.1 416 Range Not Satisfiable
             // Date: Fri, 20 Jan 2012 15:41:54 GMT
             // Content-Range: bytes */47022
-            if (! isset($parsedRange['byte']) )
+            if (! isset($parsedRange['bytes']) )
                 throw new \Exception('Range Not Satisfiable', 416);
 
 
-            $range      = explode('-', $parsedRange['byte']);
+            $range      = explode('-', $parsedRange['bytes']);
 
             if ($range[0] == '') {
                 // -500 Read 500 byte from last
@@ -157,7 +157,7 @@ class RenderBinAction
             $response->setStatusCode(206);
             $response->headers()->insert(FactoryHttpHeader::of(array(
                 // Content-Range: bytes 0-1023/146515
-                'Content-Range' => 'byte '.$range[0].'-'.$range[1].'/'.$totalContentSize
+                'Content-Range' => 'bytes '.$range[0].'-'.$range[1].'/'.$totalContentSize
             )));
         }
 
@@ -166,7 +166,7 @@ class RenderBinAction
 
         // Support Accept Range; Resume Download ...
         $response->headers()->insert(FactoryHttpHeader::of(array(
-            'Accept-Ranges' => 'byte'
+            'Accept-Ranges' => 'bytes'
         )));
 
 
