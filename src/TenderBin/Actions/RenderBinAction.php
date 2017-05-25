@@ -156,7 +156,7 @@ class RenderBinAction
             // Content-Range: bytes 42-1233/*
             $response->setStatusCode(206);
             if (! $range[1])
-                $range[1] = $totalContentSize;
+                $range[1] = $totalContentSize-1;
             $response->headers()->insert(FactoryHttpHeader::of(array(
                 // Content-Range: bytes 0-1023/146515
                 'Content-Range' => 'bytes '.$range[0].'-'.$range[1].'/'.$totalContentSize
