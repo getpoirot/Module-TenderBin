@@ -155,6 +155,8 @@ class RenderBinAction
             // When the complete length is unknown:
             // Content-Range: bytes 42-1233/*
             $response->setStatusCode(206);
+            if (! $range[1])
+                $range[1] = $totalContentSize;
             $response->headers()->insert(FactoryHttpHeader::of(array(
                 // Content-Range: bytes 0-1023/146515
                 'Content-Range' => 'bytes '.$range[0].'-'.$range[1].'/'.$totalContentSize
