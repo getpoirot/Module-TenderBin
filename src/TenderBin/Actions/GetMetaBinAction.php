@@ -59,7 +59,7 @@ class GetMetaBinAction
         // has user access to edit content?
         $this->assertAccessPermissionOnBindata(
             $binData
-            , $this->buildOwnerObjectFromToken($token)
+            , $token
             , false // just if its not protected resource
         );
 

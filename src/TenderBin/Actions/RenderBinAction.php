@@ -79,7 +79,7 @@ class RenderBinAction
         // has user access to retrieve content
         $this->assertAccessPermissionOnBindata(
             $binData
-            , $this->buildOwnerObjectFromToken($token)
+            , $token
             , false // just if its not protected resource
         );
 

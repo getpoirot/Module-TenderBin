@@ -61,7 +61,7 @@ class UpdateBinAction
         // has user access to edit content?
         $this->assertAccessPermissionOnBindata(
             $binData
-            , $this->buildOwnerObjectFromToken($token)
+            , $token
             , true // even if its not protected
         );
 

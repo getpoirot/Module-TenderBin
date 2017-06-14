@@ -56,9 +56,9 @@ abstract class aAction
      * Assert BinData Access By Check Permission
      * note: determine current user from token
      *
-     * @param iBindata $binData
-     * @param OwnerObject    $ownerObject
-     * @param boolean        $forceCheckPermission Force Check Permission On None Protected Resource
+     * @param iBindata     $binData
+     * @param iAccessToken $token
+     * @param boolean      $forceCheckPermission Force Check Permission On None Protected Resource
      *                                             when we want update the resource not protected but
      *                                             access must be checked.
      *
@@ -66,7 +66,7 @@ abstract class aAction
      */
     protected function assertAccessPermissionOnBindata(
         iBindata $binData = null
-        , $ownerObject
+        , $token
         , $forceCheckPermission = false
     ) {
         if (false === $forceCheckPermission)
@@ -75,6 +75,19 @@ abstract class aAction
                 // Bin Data is not protected; let it play ...
                 return;
 
+
+        # Check Federation Access
+        #
+        $scopes = $token->getScopes();
+        if ( in_array('federation', $scopes) ) {
+            // Federation Scope Has All Access!!
+            return;
+        }
+
+
+        // Check Access By Owner Object
+
+        $ownerObject = $this->buildOwnerObjectFromToken($token);
 
         # Check Owner Privilege On Modify Bindata
         if ($ownerObject instanceof OwnerObject) {
