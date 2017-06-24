@@ -94,7 +94,7 @@ class SearchBinAction
             array_pop($bins);                     // skip augmented content to determine has more?
             /** @var BindataEntity $nextOffset */
             $nextOffset = $bins[count($bins)-1]; // retrieve the next from this offset (less than this)
-            $linkMore   = \Module\HttpFoundation\Actions::url(null);
+            $linkMore   = \Module\HttpFoundation\Actions::url();
             $linkMore   = (string) $linkMore->uri()->withQuery('offset='.($nextOffset->getIdentifier()).'&limit='.$limit);
         }
 
