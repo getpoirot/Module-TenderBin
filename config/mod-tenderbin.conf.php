@@ -11,7 +11,6 @@ return [
         ],
     ],
 
-
     # Mongo Driver:
 
     Module\MongoDriver\Module::CONF_KEY =>
