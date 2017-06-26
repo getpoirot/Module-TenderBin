@@ -12,15 +12,6 @@ return [
     ],
 
 
-    ## ----------------------------------- ##
-    ## OAuth2Client Module Must Configured ##
-    ## to assert tokens ...                ##
-    ## ----------------------------------- ##
-
-    \Module\OAuth2Client\Module::CONF => [
-        // Configure module ....
-    ],
-
 
     # Mongo Driver:
 
