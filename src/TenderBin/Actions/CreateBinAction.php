@@ -67,13 +67,12 @@ class CreateBinAction
         } catch (exUnexpectedValue $e)
         {
             // TODO Handle Validation ...
-            throw $e;
+            throw new exUnexpectedValue('Validation Failed', null,  400, $e);
         }
 
 
         # Persist Data
         $r = $this->repoBins->insert($entityBindata);
-
 
         # Build Response
         $linkParams = [
