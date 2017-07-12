@@ -38,6 +38,10 @@ abstract class aAction
     /**
      * Assert Token
      *
+     * - Must Have Token
+     * - Token Must Bind To Resource Owner If Required
+     * - Token Must Match Required Scopes
+     *
      * @param iAccessToken $token
      *
      * @throws exAccessDenied
@@ -74,6 +78,11 @@ abstract class aAction
             if (!$binData->isProtected())
                 // Bin Data is not protected; let it play ...
                 return;
+
+
+        if (! $token)
+            // There is no token given ...
+            throw new exAccessDenied('You have not access to this data.');
 
 
         # Check Federation Access
