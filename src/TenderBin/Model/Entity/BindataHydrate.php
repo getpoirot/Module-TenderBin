@@ -164,7 +164,7 @@ class BindataHydrate
 
             if ($expiration == '0') {
                 // Consider infinite
-                $this->setExpiration(null);
+                $this->setExpiration(false);
             } else {
                 $dtStr = date("c", $expiration);
                 $d = new \DateTime($dtStr);

@@ -27,7 +27,7 @@ namespace Module\TenderBin
                 'hash'           => (string) $binData->getIdentifier(),
                 'title'          => $binData->getTitle(),
                 'content_type'   => $binData->getMimeType(),
-                'expiration'     => $expiration,
+                'expire_in'      => $expiration,
                 'is_protected'   => $binData->isProtected(),
 
                 'meta'           => \Poirot\Std\cast($binData->getMeta())->toArray(function($_, $k) {
