@@ -72,13 +72,13 @@ class UpdateBinAction
         $hydrateBindata = new Entity\BindataHydrate($updates);
 
 
-
         # Create Updated Bin
 
         try
         {
             $updatedBin = new Entity\BindataEntity($binData);
             $updatedBin->import($hydrateBindata);
+
 
             if (isset($updates['content']) && !isset($updates['version']))
                 throw new \Exception('New Version Tag Must Provided With Content.');

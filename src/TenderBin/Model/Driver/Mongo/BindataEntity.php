@@ -121,7 +121,7 @@ class BindataEntity
     function getDatetimeExpirationMongo()
     {
         $dateTime = $this->getDatetimeExpiration();
-        if ($dateTime !== null)
+        if ($dateTime !== null && $dateTime !== false)
             $dateTime = new UTCDatetime($dateTime->getTimestamp() * 1000);
 
         return $dateTime;
