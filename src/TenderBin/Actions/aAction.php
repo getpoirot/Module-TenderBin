@@ -1,21 +1,33 @@
 <?php
 namespace Module\TenderBin\Actions;
 
+use Module\TenderBin\Events\EventHeapOfTenderBin;
 use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Model\Entity\Bindata\OwnerObject;
 use Poirot\Application\Exception\exAccessDenied;
+use Poirot\Events\Event\BuildEvent;
+use Poirot\Events\Interfaces\iEventHeap;
+use Poirot\Events\Interfaces\Respec\iEventProvider;
 use Poirot\Http\Interfaces\iHttpRequest;
 use Poirot\OAuth2Client\Interfaces\iAccessToken;
 
 
+
+
 /**
+ * Default Events Setting Can Be Set As Merged Config
+ *
+ *
  * @method \Traversable XX($owner_identifier, $skip = null, $limit = null)
  */
 abstract class aAction
     extends \Module\Foundation\Actions\aAction
+    implements iEventProvider
 {
     /** @var iHttpRequest */
     protected $request;
+    /** @var EventHeapOfTenderBin */
+    protected $events;
 
     protected $tokenMustHaveOwner  = false;
     protected $tokenMustHaveScopes = array(
@@ -30,6 +42,29 @@ abstract class aAction
     function __construct(iHttpRequest $httpRequest)
     {
         $this->request = $httpRequest;
+    }
+
+
+    /**
+     * Get Events
+     *
+     * @return iEventHeap
+     */
+    function event()
+    {
+        if (! $this->events ) {
+            // Build Events From Merged Config
+            $conf   = $this->sapi()->config()->get( \Module\TenderBin\Module::CONF_KEY );
+            $conf   = $conf['events'];
+
+            $events = new EventHeapOfTenderBin;
+            $builds = new BuildEvent([ 'events' => $conf ]);
+            $builds->build($events);
+
+            $this->events = $events;
+        }
+
+        return $this->events;
     }
 
 

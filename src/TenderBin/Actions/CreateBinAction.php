@@ -2,6 +2,8 @@
 namespace Module\TenderBin\Actions;
 
 use Module\HttpFoundation\Events\Listener\ListenerDispatch;
+use Module\TenderBin\Events\DataCollector;
+use Module\TenderBin\Events\EventHeapOfTenderBin;
 use Module\TenderBin\Model\Entity;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Poirot\Http\Interfaces\iHttpRequest;
@@ -72,9 +74,17 @@ class CreateBinAction
 
 
         # Persist Data
-        $r = $this->repoBins->insert($entityBindata);
+        #
+        $c = $this->event()->trigger(EventHeapOfTenderBin::BIN_CREATED, [
+            /** @see DataCollector */
+            'binObject' => $this->repoBins->insert($entityBindata)
+        ]);
+
+        $r = $c->collector()->getBinObject();
+
 
         # Build Response
+        #
         $linkParams = [
             'resource_hash' => $r->getIdentifier(), ];
 

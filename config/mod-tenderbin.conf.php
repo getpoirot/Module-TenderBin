@@ -1,7 +1,23 @@
 <?php
+use Module\TenderBin\Events\EventHeapOfTenderBin;
+
 return [
 
     \Module\TenderBin\Module::CONF_KEY => [
+        'events' => [
+            // Events Section Of Events Builder
+            /** @see \Poirot\Events\Event\BuildEvent */
+            EventHeapOfTenderBin::BIN_CREATED => [
+                'listeners' => [
+                    [
+                        'priority' => 1000,
+                        'listener' => function($binObject) {
+                            // Implement this
+                        }
+                    ],
+                ],
+            ]
+        ],
         'validator' => [
             // 'allowed_mime_types' => ['image/*', ],
             //'denied_mime_types'  => ['*', ],
