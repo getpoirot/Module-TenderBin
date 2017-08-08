@@ -75,12 +75,29 @@ class CreateBinAction
 
         # Persist Data
         #
-        $c = $this->event()->trigger(EventHeapOfTenderBin::BIN_CREATED, [
-            /** @see DataCollector */
-            'binObject' => $this->repoBins->insert($entityBindata)
-        ]);
 
-        $r = $c->collector()->getBinObject();
+        // Can be used inside event then fun
+        $_f_insertBin = function ($entityBin) {
+            return $this->repoBins->insert($entityBin);
+        };
+
+        $r = $this->event()
+            ->trigger(EventHeapOfTenderBin::BEFORE_CREATE_BIN, [
+                /** @see DataCollector */
+                'binObject' => $entityBindata
+            ])
+            ->then(function ($collector, $e) use ($_f_insertBin) {
+                /** @var DataCollector $collector */
+                $entityBin = $collector->getBinObject();
+                $binData   = $_f_insertBin($entityBin);
+                $collector->setBinObject($binData); // Persisted Bin Object
+                return $e;
+            })
+            ->trigger(EventHeapOfTenderBin::AFTER_BIN_CREATED)
+            ->then(function ($collector) {
+                /** @var DataCollector $collector */
+                return $collector->getBinObject();
+            });
 
 
         # Build Response

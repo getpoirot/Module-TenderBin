@@ -9,7 +9,8 @@ use Poirot\Events\EventHeap;
 class EventHeapOfTenderBin
     extends EventHeap
 {
-    const BIN_CREATED = 'bindata.created';
+    const BEFORE_CREATE_BIN   = 'bindata.before.create';
+    const AFTER_BIN_CREATED   = 'bindata.after.created';
 
 
     /**
@@ -21,7 +22,8 @@ class EventHeapOfTenderBin
         $this->collector = new DataCollector;
 
         // attach default event names:
-        $this->bind( new Event(self::BIN_CREATED) );
+        $this->bind( new Event(self::BEFORE_CREATE_BIN) );
+        $this->bind( new Event(self::AFTER_BIN_CREATED) );
     }
 
 

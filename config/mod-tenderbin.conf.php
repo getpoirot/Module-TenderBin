@@ -7,14 +7,20 @@ return [
         'events' => [
             // Events Section Of Events Builder
             /** @see \Poirot\Events\Event\BuildEvent */
-            EventHeapOfTenderBin::BIN_CREATED => [
+            EventHeapOfTenderBin::BEFORE_CREATE_BIN => [
                 'listeners' => [
-                    [
-                        'priority' => 1000,
-                        'listener' => function($binObject) {
-                            // Implement this
-                        }
-                    ],
+                    ['priority' => 1000,  'listener' => function($binObject) {
+                        // Implement this
+                        /** @var \Module\TenderBin\Model\Entity\BindataEntity $binObject */
+                    }],
+                ],
+            ],
+            EventHeapOfTenderBin::AFTER_BIN_CREATED => [
+                'listeners' => [
+                    ['priority' => 1000, 'listener' => function($binObject) {
+                        // Implement this
+                        print_r($binObject);die;
+                    }],
                 ],
             ]
         ],
