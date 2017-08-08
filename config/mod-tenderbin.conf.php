@@ -19,7 +19,6 @@ return [
                 'listeners' => [
                     ['priority' => 1000, 'listener' => function($binObject) {
                         // Implement this
-                        print_r($binObject);die;
                     }],
                 ],
             ]
