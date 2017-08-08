@@ -1,5 +1,7 @@
 <?php
+use Module\HttpRenderer\Services\ServiceRenderStrategiesContainer;
 use Module\TenderBin\Events\EventHeapOfTenderBin;
+use Module\TenderBin\RenderStrategy\RenderTenderStrategy;
 
 return [
 
@@ -32,8 +34,18 @@ return [
         ],
     ],
 
-    # Mongo Driver:
+    # Renderer
 
+    \Module\HttpRenderer\Module::CONF => [
+        ServiceRenderStrategiesContainer::CONF => [
+            'services' => [
+                'tenderbin' => RenderTenderStrategy::class,
+            ],
+        ],
+    ],
+
+    # Mongo Driver:
+    #
     Module\MongoDriver\Module::CONF_KEY =>
     [
         \Module\MongoDriver\Services\aServiceRepository::CONF_REPOSITORIES =>
