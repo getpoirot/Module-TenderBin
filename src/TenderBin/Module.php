@@ -133,15 +133,3 @@ namespace Module\TenderBin\Actions
     class IOC extends \IOC
     { }
 }
-
-
-namespace Module\Content\Services\Repository
-{
-    use Module\TenderBin\Model\Driver\Mongo\BindataRepo;
-
-    /**
-     * @method static BindataRepo Bindata()
-     */
-    class IOC extends \IOC
-    { }
-}

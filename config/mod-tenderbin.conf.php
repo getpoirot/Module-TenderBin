@@ -35,7 +35,7 @@ return [
     ],
 
     # Renderer
-
+    #
     \Module\HttpRenderer\Module::CONF => [
         ServiceRenderStrategiesContainer::CONF => [
             'services' => [

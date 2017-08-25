@@ -10,6 +10,7 @@
  *
  * @see \Module\TenderBin::getServices()
  */
+
 return [
     'nested' => [
         'repository' => [
