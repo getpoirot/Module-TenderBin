@@ -66,7 +66,7 @@ class RenderBinAction
                 $binData = $this->repoBins->findOneByHash($resource_hash);
             }
         } catch (\Exception $e) {
-            throw new exResourceNotFound;
+            throw new exResourceNotFound($e->getMessage());
         }
 
         if (false === $binData)
