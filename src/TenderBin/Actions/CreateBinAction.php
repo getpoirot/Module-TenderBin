@@ -41,7 +41,7 @@ class CreateBinAction
      * @return array
      * @throws \Exception
      */
-    function __invoke($custom_uid = null, iAccessToken $token = null)
+    function __invoke($custom_uid = null, $token = null)
     {
         # Assert Token
         $this->assertTokenByOwnerAndScope($token);

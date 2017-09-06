@@ -12,8 +12,6 @@ use Poirot\Http\Interfaces\iHttpRequest;
 use Poirot\OAuth2Client\Interfaces\iAccessToken;
 
 
-
-
 /**
  * Default Events Setting Can Be Set As Merged Config
  *
@@ -24,6 +22,8 @@ abstract class aAction
     extends \Module\Foundation\Actions\aAction
     implements iEventProvider
 {
+    const CONF = 'events';
+
     /** @var iHttpRequest */
     protected $request;
     /** @var EventHeapOfTenderBin */
@@ -55,7 +55,7 @@ abstract class aAction
         if (! $this->events ) {
             // Build Events From Merged Config
             $conf   = $this->sapi()->config()->get( \Module\TenderBin\Module::CONF_KEY );
-            $conf   = $conf['events'];
+            $conf   = $conf[self::CONF];
 
             $events = new EventHeapOfTenderBin;
             $builds = new BuildEvent([ 'events' => $conf ]);

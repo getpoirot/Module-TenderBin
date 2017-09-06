@@ -6,7 +6,16 @@ use Module\TenderBin\RenderStrategy\RenderTenderStrategy;
 return [
 
     \Module\TenderBin\Module::CONF_KEY => [
-        'events' => [
+
+        'validator' => [
+            // 'allowed_mime_types' => ['image/*', ],
+            //'denied_mime_types'  => ['*', ],
+        ],
+        'aliases_client' => [
+            // 'client_id_alias' => 'client_id',
+        ],
+
+        \Module\TenderBin\Actions\aAction::CONF => [
             // Events Section Of Events Builder
             /** @see \Poirot\Events\Event\BuildEvent */
             EventHeapOfTenderBin::BEFORE_CREATE_BIN => [
@@ -25,13 +34,7 @@ return [
                 ],
             ]
         ],
-        'validator' => [
-            // 'allowed_mime_types' => ['image/*', ],
-            //'denied_mime_types'  => ['*', ],
-        ],
-        'aliases_client' => [
-            // 'client_id_alias' => 'client_id',
-        ],
+
     ],
 
     # Renderer
