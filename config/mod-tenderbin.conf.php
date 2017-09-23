@@ -75,7 +75,7 @@ return [
 
                 'collection' => [
                     // query on which collection
-                    'name' => 'tenderbin.bins',
+                    'name' => 'fs.tenderbin',
                     // which client to connect and query with
                     'client' => 'master',
                     // ensure indexes

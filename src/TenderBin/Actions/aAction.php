@@ -6,6 +6,7 @@ use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Model\Entity\Bindata\OwnerObject;
 use Poirot\Application\Exception\exAccessDenied;
 use Poirot\Events\Event\BuildEvent;
+use Poirot\Events\Event\MeeterIoc;
 use Poirot\Events\Interfaces\iEventHeap;
 use Poirot\Events\Interfaces\Respec\iEventProvider;
 use Poirot\Http\Interfaces\iHttpRequest;
@@ -58,7 +59,7 @@ abstract class aAction
             $conf   = $conf[self::CONF];
 
             $events = new EventHeapOfTenderBin;
-            $builds = new BuildEvent([ 'events' => $conf ]);
+            $builds = new BuildEvent([ 'meeter' => new MeeterIoc, 'events' => $conf ]);
             $builds->build($events);
 
             $this->events = $events;

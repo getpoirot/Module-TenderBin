@@ -93,6 +93,7 @@ class CreateBinAction
                 $collector->setBinObject($binData); // Persisted Bin Object
                 return $e;
             })
+
             ->trigger(EventHeapOfTenderBin::AFTER_BIN_CREATED)
             ->then(function ($collector) {
                 /** @var DataCollector $collector */
