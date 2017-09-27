@@ -159,13 +159,19 @@ class BindataHydrate
      */
     function getDatetimeExpiration()
     {
+
         if ($this->expiration !== null && !$this->expiration instanceof \DateTime) {
+
             $expiration = (string) $this->expiration;
 
             if ($expiration == '0') {
                 // Consider infinite
                 $this->setExpiration(false);
             } else {
+
+                 if (strlen((string)$expiration)<10)
+                    $expiration = time() +(int)$expiration;
+
                 $dtStr = date("c", $expiration);
                 $d = new \DateTime($dtStr);
                 $this->setExpiration($d);
@@ -216,4 +222,6 @@ class BindataHydrate
 
         return $this->version;
     }
+
+
 }
