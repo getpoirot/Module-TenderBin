@@ -3,20 +3,21 @@ use Module\HttpFoundation\Events\Listener\ListenerDispatch;
 
 return [
     'tenderbin'  => [
-        /*
+
         'route'    => 'RouteSegment',
         'priority' => -10, // force host match before others.
         'options' => [
             'criteria'    => '/bin',
             'match_whole' => false,
         ],
-        */
 
+        /*
         'route'    => 'RouteHostname',
         'priority' => -10, // force host match before others.
         'options' => [
             'criteria'    => 'storage.~.+~',
         ],
+        */
 
         'params'  => [
             ListenerDispatch::ACTIONS => [

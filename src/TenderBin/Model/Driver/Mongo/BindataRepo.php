@@ -278,7 +278,7 @@ class BindataRepo
      *
      * @return \Traversable
      */
-    function find(array $expression, $offset = null, $limit = null)
+    function findAll(array $expression, $offset = null, $limit = null)
     {
         # search term to mongo condition
         $condition = \Module\MongoDriver\buildMongoConditionFromExpression($expression);

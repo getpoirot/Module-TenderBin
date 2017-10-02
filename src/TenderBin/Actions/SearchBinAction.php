@@ -79,7 +79,7 @@ class SearchBinAction
             , ['meta', 'mime_type', 'version', 'owner_identifier']
             , 'allow' );
 
-        $bins = $this->repoBins->find(
+        $bins = $this->repoBins->findAll(
             $expression
             , $offset
             , (int) $limit + 1

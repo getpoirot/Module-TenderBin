@@ -26,7 +26,7 @@ interface iRepoBindata
      * 
      * @return \Traversable
      */
-    function find(array $expression, $offset = null, $limit = null);
+    function findAll(array $expression, $offset = null, $limit = null);
 
     /**
      * Find Expired
