@@ -8,6 +8,7 @@ use Module\TenderBin\Model\Entity\BindataEntity;
 use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
 use Poirot\Http\Interfaces\iHttpRequest;
 use Poirot\OAuth2Client\Interfaces\iAccessToken;
+use Poirot\Std\Type\StdArray;
 
 
 class SearchBinAction
@@ -75,9 +76,11 @@ class SearchBinAction
 
         // Search Bins Belong To This Owner Determine By Token
         $q['owner_identifier'] = $this->buildOwnerObjectFromToken($token);
-        $expression = \Module\MongoDriver\parseExpressionFromArray( $q
-            , ['meta', 'mime_type', 'version', 'owner_identifier']
-            , 'allow' );
+
+        $expression = StdArray::of($q)
+            ->exclude(['meta', 'mime_type', 'version', 'owner_identifier'], StdArray::EXCLUDE_ALLOW)
+            ->value
+        ;
 
         $bins = $this->repoBins->findAll(
             $expression
