@@ -55,7 +55,8 @@ class UpdateBinAction
             ));
 
 
-        # Assert Token
+        ## Assert Token
+        #
         $this->assertTokenByOwnerAndScope($token);
 
         // has user access to edit content?

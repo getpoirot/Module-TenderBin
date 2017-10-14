@@ -99,6 +99,11 @@ class BindataEntity
      */
     function setDatetimeExpirationMongo($dateTime)
     {
+        if ($dateTime === false) {
+            $this->setDatetimeExpiration($dateTime);
+            return $this;
+        }
+
         if ($dateTime !== null && !$dateTime instanceof UTCDatetime)
             throw new \InvalidArgumentException(sprintf(
                 'Datetime must instance of UTCDatetime or null; given: (%s).'

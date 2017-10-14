@@ -124,11 +124,18 @@ abstract class aAction
         # Check Federation Access
         #
         $scopes = $token->getScopes();
-        if ( in_array('federation', $scopes) ) {
+
+        // TODO check with scopes checker helper
+        // TODO change federation scope
+        if (in_array('profile', /*'federation',*/ $scopes) ) {
             // Federation Scope Has All Access!!
             return;
         }
 
+        if (in_array('federation', $scopes) ) {
+            // Federation Scope Has All Access!!
+            return;
+        }
 
         // Check Access By Owner Object
 

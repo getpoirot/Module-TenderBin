@@ -178,12 +178,17 @@ class BindataEntity
     /**
      * Set Date Time Expiration
      *
-     * @param \DateTime|null $dateTime
+     * @param \DateTime|null|false $dateTime
      *
      * @return $this
      */
     function setDatetimeExpiration($dateTime)
     {
+        if ($dateTime === false) {
+            $this->datetimeExpiration = $dateTime;
+            return $this;
+        }
+
         if (($dateTime !== null && $dateTime !== false) && !$dateTime instanceof \DateTime)
             throw new \InvalidArgumentException(sprintf(
                 'Datetime must instance of \Datetime or null; given: (%s).'
