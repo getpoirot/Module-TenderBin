@@ -78,43 +78,36 @@ class CreateBinAction
         # Persist Data
         #
 
-        // Can be used inside event then fun
-        $_f_insertBin = function ($entityBin) {
-            return $this->repoBins->insert($entityBin);
-        };
-
-        // TODO separate before and after calls event triggers
-        // TODO return bindata object persist object entity directly into response
-        //      currently this use collector result
-        $r = $this->event()
+        // Event
+        //
+        $e = $this->event()
             ->trigger(EventHeapOfTenderBin::BEFORE_CREATE_BIN, [
                 /** @see DataCollector */
                 'binObject' => $entityBindata
-            ])
-            ->then(function ($collector, $e) use ($_f_insertBin) {
-                /** @var DataCollector $collector */
-                $entityBin = $collector->getBinObject();
-                $binData   = $_f_insertBin($entityBin);
-                $collector->setBinObject($binData); // Persisted Bin Object
-                return $e;
-            })
-            ->trigger(EventHeapOfTenderBin::AFTER_BIN_CREATED)
-            ->then(function ($collector) {
-                /** @var DataCollector $collector */
-                return $collector->getBinObject();
-            });
+            ]);
+
+
+        $pBinEntity = $this->repoBins->insert($entityBindata);
+
+
+        // Event
+        //
+        $e->trigger(EventHeapOfTenderBin::AFTER_BIN_CREATED, [
+            /** @see DataCollector */
+            'binObject' => clone $pBinEntity
+        ]);
 
 
         # Build Response
         #
         $linkParams = [
-            'resource_hash' => $r->getIdentifier(), ];
+            'resource_hash' => $pBinEntity->getIdentifier(), ];
 
-        if ( $r->getMeta()->has('is_file') )
+        if ( $pBinEntity->getMeta()->has('is_file') )
             $linkParams += [
-                'filename' => $r->getMeta()->get('filename'), ];
+                'filename' => $pBinEntity->getMeta()->get('filename'), ];
 
-        $result = \Module\TenderBin\toResponseArrayFromBinEntity($r)
+        $result = \Module\TenderBin\toResponseArrayFromBinEntity($pBinEntity)
             + [
                 '_link' => (string) \Module\HttpFoundation\Actions::url(
                     'main/tenderbin/resource/'
