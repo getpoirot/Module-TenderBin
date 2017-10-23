@@ -90,15 +90,9 @@ class CreateBinAction
         $pBinEntity = $this->repoBins->insert($entityBindata);
 
 
-        // Event
-        //
-        $e->trigger(EventHeapOfTenderBin::AFTER_BIN_CREATED, [
-            /** @see DataCollector */
-            'binObject' => clone $pBinEntity
-        ]);
-
-
-        # Build Response
+        ## Build Response
+        # !! we want response with no change on after_create event
+        #    problem with clone
         #
         $linkParams = [
             'resource_hash' => $pBinEntity->getIdentifier(), ];
@@ -114,6 +108,14 @@ class CreateBinAction
                     , $linkParams
                 ),
             ];
+
+
+        // Event
+        //
+        $e->trigger(EventHeapOfTenderBin::AFTER_BIN_CREATED, [
+            /** @see DataCollector */
+            'binObject' => clone $pBinEntity
+        ]);
 
 
         return [
