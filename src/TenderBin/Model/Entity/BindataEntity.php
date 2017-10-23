@@ -24,7 +24,7 @@ class BindataEntity
     protected $datetimeExpiration;
     protected $dateCreated;
     protected $protected = false;
-    /** @var iObjectVersion */
+    /** @var VersionObject */
     protected $version;
 
 
@@ -268,7 +268,7 @@ class BindataEntity
     /**
      * Get Version Status
      *
-     * @return iObjectVersion
+     * @return VersionObject
      */
     function getVersion()
     {

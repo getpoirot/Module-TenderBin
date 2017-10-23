@@ -43,11 +43,13 @@ class CreateBinAction
      */
     function __invoke($custom_uid = null, $token = null)
     {
-        # Assert Token
+        ## Assert Token
+        #
         $this->assertTokenByOwnerAndScope($token);
 
 
-        # Create Post Entity From Http Request
+        ## Create Post Entity From Http Request
+        #
         $hydrateBindata = new Entity\BindataHydrate(
             Entity\BindataHydrate::parseWith($this->request) );
 
@@ -81,6 +83,9 @@ class CreateBinAction
             return $this->repoBins->insert($entityBin);
         };
 
+        // TODO separate before and after calls event triggers
+        // TODO return bindata object persist object entity directly into response
+        //      currently this use collector result
         $r = $this->event()
             ->trigger(EventHeapOfTenderBin::BEFORE_CREATE_BIN, [
                 /** @see DataCollector */
@@ -93,7 +98,6 @@ class CreateBinAction
                 $collector->setBinObject($binData); // Persisted Bin Object
                 return $e;
             })
-
             ->trigger(EventHeapOfTenderBin::AFTER_BIN_CREATED)
             ->then(function ($collector) {
                 /** @var DataCollector $collector */
