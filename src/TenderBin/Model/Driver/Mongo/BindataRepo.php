@@ -186,6 +186,10 @@ class BindataRepo
         # Persist BinData Record 
         $r = $this->_query()->insertOne($binData);
 
+        if ( isset($content) )
+            // Give Back Content After Writing It
+            $binData->setContent($content);
+
 
         # Give back entity with given id and meta record info
         return $binData;

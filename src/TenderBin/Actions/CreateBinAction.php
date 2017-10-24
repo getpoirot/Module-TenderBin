@@ -9,6 +9,8 @@ use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Poirot\Http\Interfaces\iHttpRequest;
 use Poirot\OAuth2Client\Interfaces\iAccessToken;
 use Poirot\Std\Exceptions\exUnexpectedValue;
+use Poirot\Stream\Psr\StreamBridgeFromPsr;
+use Poirot\Stream\Streamable\STemporary;
 
 
 class CreateBinAction
@@ -77,18 +79,22 @@ class CreateBinAction
 
         # Persist Data
         #
+        // This stream is seekable
+        $uploadStream = new STemporary(
+            new StreamBridgeFromPsr($entityBindata->getContent()->getStream())
+        );
 
         // Event
         //
         $e = $this->event()
             ->trigger(EventHeapOfTenderBin::BEFORE_CREATE_BIN, [
                 /** @see DataCollector */
-                'binObject' => $entityBindata
+                'binObject' => $entityBindata, 'uploadStream' => $uploadStream,
             ]);
 
 
         $pBinEntity = $this->repoBins->insert($entityBindata);
-
+        $pBinID     = $pBinEntity->getIdentifier();
 
         ## Build Response
         # !! we want response with no change on after_create event
@@ -112,11 +118,19 @@ class CreateBinAction
 
         // Event
         //
-        $e->trigger(EventHeapOfTenderBin::AFTER_BIN_CREATED, [
-            /** @see DataCollector */
-            'binObject' => clone $pBinEntity
-        ]);
+        try {
 
+            $e->trigger(EventHeapOfTenderBin::AFTER_BIN_CREATED, [
+                /** @see DataCollector */
+                'binObject' => clone $pBinEntity
+            ]);
+
+        } catch (\Exception $e) {
+            // Delete Bin Stored If We Have Error ....
+            $this->repoBins->deleteOneByHash($pBinID);
+
+            throw $e;
+        }
 
         return [
             ListenerDispatch::RESULT_DISPATCH => $result,
