@@ -20,13 +20,13 @@ interface iRepoBindata
     /**
      * Find By Search Term
      *
-     * @param array  $expression
-     * @param string $offset
-     * @param int    $limit
+     * @param string|array $expression
+     * @param string       $offset
+     * @param int          $limit
      * 
      * @return \Traversable
      */
-    function findAll(array $expression, $offset = null, $limit = null);
+    function findAll($expression, $offset = null, $limit = null);
 
     /**
      * Find Expired

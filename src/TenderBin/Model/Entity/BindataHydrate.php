@@ -34,7 +34,6 @@ class BindataHydrate
 
 
     /**
-     * // TODO meta with [prefix __, is_file, filesize] is system prefixed and not allowed
      * Construct
      *
      * @param array|\Traversable $options

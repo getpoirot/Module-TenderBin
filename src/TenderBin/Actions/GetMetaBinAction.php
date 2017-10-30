@@ -73,9 +73,10 @@ class GetMetaBinAction
             $linkParams = [
                 'resource_hash' => $sv->getIdentifier(), ];
 
-            if ( $sv->getMeta()->has('is_file') )
+            if ( $sv->getMeta()->has('is_file') ) {
                 $linkParams += [
                     'filename' => $sv->getMeta()->get('filename'), ];
+            }
 
             $versions[$sv->getVersion()->getTag()] = [
                 'bindata' => [
@@ -87,7 +88,8 @@ class GetMetaBinAction
                 ) : null,
             ];
         }
-        
+
+
         return ['binData' => $binData, 'versions' => $versions];
     }
 

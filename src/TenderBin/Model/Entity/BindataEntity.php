@@ -85,8 +85,10 @@ class BindataEntity
      */
     function setMeta($metaData)
     {
-        $meta = $this->getMeta();
+        $meta = clone $this->getMeta();
         $meta->clean()->import($metaData);
+
+        $this->meta = $meta;
         return $this;
     }
 

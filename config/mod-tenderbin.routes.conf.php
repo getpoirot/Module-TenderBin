@@ -46,7 +46,7 @@ return [
                 ],
                 'params'  => [
                     ListenerDispatch::ACTIONS => [
-                        '/module/tenderbin/actions/cleanupBinsAction',
+                        \Module\TenderBin\Actions\CleanupBinsAction::class,
                     ],
                 ],
             ],
@@ -61,7 +61,7 @@ return [
                 ],
                 'params'  => [
                     ListenerDispatch::ACTIONS => [
-                        '/module/tenderbin/actions/createBinAction',
+                        \Module\TenderBin\Actions\CreateBinAction::class,
                     ],
                 ],
             ],
@@ -74,7 +74,7 @@ return [
                 ],
                 'params'  => [
                     ListenerDispatch::ACTIONS => [
-                        '/module/tenderbin/actions/searchBinAction',
+                        \Module\TenderBin\Actions\SearchBinAction::class,
                     ],
                 ],
             ],
@@ -95,8 +95,8 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::ACTIONS => [
-                                '/module/tenderbin/actions/getMetaBinAction',
                                 \Module\TenderBin\Actions\GetMetaBinAction::functorResponseGetInfoResult(),
+                                \Module\TenderBin\Actions\GetMetaBinAction::class, // this run first
                             ],
                         ],
                     ],
@@ -108,8 +108,8 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::ACTIONS => [
-                                '/module/tenderbin/actions/getMetaBinAction',
                                 \Module\TenderBin\Actions\GetMetaBinAction::functorResponseHeadInfoResult(),
+                                \Module\TenderBin\Actions\GetMetaBinAction::class, // this run first
                             ],
                         ],
                     ],
@@ -122,7 +122,7 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::ACTIONS => [
-                                '/module/tenderbin/actions/updateBinAction',
+                                \Module\TenderBin\Actions\UpdateBinAction::class,
                             ],
                         ],
                     ],
@@ -134,7 +134,7 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::ACTIONS => [
-                                '/module/tenderbin/actions/deleteBinAction',
+                                \Module\TenderBin\Actions\DeleteBinAction::class,
                             ],
                         ],
                     ],
@@ -146,13 +146,12 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::ACTIONS => [
-                                '/module/tenderbin/actions/renderBinAction',
+                                \Module\TenderBin\Actions\RenderBinAction::class,
                             ],
                         ],
                     ],
                 ],
             ],
-
         ],
     ],
 ];

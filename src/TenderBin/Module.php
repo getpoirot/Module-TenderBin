@@ -118,18 +118,18 @@ namespace Module\TenderBin
 }
 
 
-namespace Module\TenderBin\Actions
+namespace Module\TenderBin
 {
+    use Module\TenderBin\Actions\Helper\CreateBin;
+    use Module\TenderBin\Interfaces\Model\iBindata;
+    use Module\TenderBin\Model\Driver\Mongo\BindataEntity;
+
 
     /**
-     * @property RenderBinAction  $renderBinAction
-     * @property CreateBinAction  $createBinAction
-     * @property UpdateBinAction  $updateBinAction
-     * @property DeleteBinAction  $deleteBinAction
-     * @property SearchBinAction  $searchBinAction
-     * @property GetMetaBinAction $getMetaBinAction
-     *
+     * @see CreateBin
+     * @method static BindataEntity CreateBin(iBindata $entity = null)
+     * ...............................................................
      */
-    class IOC extends \IOC
+    class Actions extends \IOC
     { }
 }

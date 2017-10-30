@@ -276,16 +276,20 @@ class BindataRepo
      *
      * - exclude content from retrieved bins
      *
-     * @param array  $expression
-     * @param string $offset
-     * @param int    $limit
+     * @param string|array $expression
+     * @param string       $offset
+     * @param int          $limit
      *
      * @return \Traversable
      */
-    function findAll(array $expression, $offset = null, $limit = null)
+    function findAll($expression, $offset = null, $limit = null)
     {
         # search term to mongo condition
-        $expression = \Module\MongoDriver\parseExpressionFromArray($expression);
+        $expression = (is_string($expression))
+            ? \Module\MongoDriver\parseExpressionFromString($expression)
+            : \Module\MongoDriver\parseExpressionFromArray($expression)
+        ;
+
         $condition  = \Module\MongoDriver\buildMongoConditionFromExpression($expression);
 
         if ($offset)
