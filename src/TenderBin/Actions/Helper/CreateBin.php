@@ -61,9 +61,9 @@ class CreateBin
         $uploadStream = null;
         if ($entity->getContent() instanceof UploadedFile) {
             // This stream is seekable
-            $uploadStream = new STemporary(
-                new StreamBridgeFromPsr( $entity->getContent()->getStream() )
-            );
+            $stream = new StreamBridgeFromPsr( $entity->getContent()->getStream() );
+            $uploadStream = new STemporary($stream);
+            $stream->resource()->close();
         }
 
 
@@ -96,6 +96,10 @@ class CreateBin
             throw $e;
         }
 
+
+        // Close Stream
+        $uploadStream->resource()
+            ->close();
 
         return $pBinEntity;
     }
