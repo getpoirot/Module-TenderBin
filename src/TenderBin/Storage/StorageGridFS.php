@@ -106,7 +106,10 @@ class StorageGridFS
             $res = $gridFS->openDownloadStream($storageId);
         } catch (\MongoDB\GridFS\Exception\FileNotFoundException $e) {
             // New Tagged Version Of File May Deleted The Resource.
-            throw new \RuntimeException('File Not Found.');
+            throw new \RuntimeException(sprintf(
+                'File Associated To (%s) Not Found.'
+                , (string) $storageId
+            ));
         }
 
         return $res;
