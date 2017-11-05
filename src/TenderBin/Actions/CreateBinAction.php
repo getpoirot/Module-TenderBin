@@ -64,6 +64,7 @@ class CreateBinAction
 
 
         ## Build Response
+        #
         # !! we want response with no change on after_create event
         #    problem with clone
         #

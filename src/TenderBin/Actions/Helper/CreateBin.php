@@ -4,11 +4,13 @@ namespace Module\TenderBin\Actions\Helper;
 use Module\TenderBin\Actions\aAction;
 use Module\TenderBin\Events\EventHeapOfTenderBin;
 use Module\TenderBin\Interfaces\Model\iBindata;
+use Module\TenderBin\Model\Driver\Mongo\BindataEntity;
 use Module\TenderBin\Model\Entity;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Poirot\Http\Interfaces\iHttpRequest;
 use Poirot\Psr7\UploadedFile;
 use Poirot\Std\Exceptions\exUnexpectedValue;
+use Poirot\Std\Struct\DataEntity;
 use Poirot\Stream\Psr\StreamBridgeFromPsr;
 use Poirot\Stream\Streamable\STemporary;
 
@@ -39,7 +41,7 @@ class CreateBin
      *
      * @param iBindata $entity
      *
-     * @return array
+     * @return BindataEntity
      * @throws \Exception
      */
     function __invoke(iBindata $entity = null)
@@ -79,6 +81,20 @@ class CreateBin
         $pBinEntity = $this->repoBins->insert($entity);
         $pBinID     = $pBinEntity->getIdentifier();
 
+        $rEntity    = new BindataEntity;
+        $rEntity
+            ->setIdentifier($pBinEntity->getIdentifier())
+            ->setTitle($pBinEntity->getTitle())
+            ->setMeta( new DataEntity($pBinEntity->getMeta()) )
+            ->setContent($pBinEntity->getContent())
+            ->setMimeType($pBinEntity->getMimeType())
+            ->setOwnerIdentifier( new Entity\Bindata\OwnerObject($pBinEntity->getOwnerIdentifier()) )
+            ->setDatetimeExpiration($pBinEntity->getDatetimeExpiration())
+            ->setDateCreated($pBinEntity->getDateCreated())
+            ->setProtected($pBinEntity->isProtected())
+            ->setVersion( new Entity\Bindata\VersionObject($pBinEntity->getVersion()) )
+        ;
+
 
         // Event
         //
@@ -86,7 +102,7 @@ class CreateBin
 
             $e->trigger(EventHeapOfTenderBin::AFTER_BIN_CREATED, [
                 /** @see DataCollector */
-                'binObject' => clone $pBinEntity
+                'binObject' => $pBinEntity
             ]);
 
         } catch (\Exception $e) {
@@ -101,7 +117,7 @@ class CreateBin
         $uploadStream->resource()
             ->close();
 
-        return $pBinEntity;
+        return $rEntity;
     }
 
 

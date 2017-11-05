@@ -78,7 +78,22 @@ return [
                     ],
                 ],
             ],
-            
+
+            // Retrieve Bin Meta Info
+            'touch' => [
+                'route' => 'RouteMethodSegment',
+                'options' => [
+                    'criteria'    => '/:resource_hash~\w{24}~</:filename~.+/~>/touch',
+                    'method'      => 'PUT',
+                    'match_whole' => true,
+                ],
+                'params'  => [
+                    ListenerDispatch::ACTIONS => [
+                        \Module\TenderBin\Actions\TouchBinAction::class,
+                    ],
+                ],
+            ],
+
             'resource' => [
                 'route' => 'RouteSegment',
                 'options' => [
