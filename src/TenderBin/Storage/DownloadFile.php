@@ -5,6 +5,7 @@ use Module\TenderBin\Interfaces\DownloadFileInterface;
 use Poirot\Psr7\UploadedFile;
 
 
+// TODO ability to set upstream such as temporary or caching stream to rewind file
 class DownloadFile 
     extends UploadedFile
     implements DownloadFileInterface

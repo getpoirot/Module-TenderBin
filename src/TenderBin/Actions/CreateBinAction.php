@@ -57,7 +57,6 @@ class CreateBinAction
         $entityBindata->setIdentifier($custom_uid);
 
 
-
         ## Persist Entity
         #
         $pBinEntity = \Module\TenderBin\Actions::CreateBin($entityBindata);

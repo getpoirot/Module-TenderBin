@@ -57,13 +57,15 @@ class CreateBin
         }
 
 
-
         # Persist Data
         #
         $uploadStream = null;
         if ($entity->getContent() instanceof UploadedFile) {
             // This stream is seekable
             $stream = new StreamBridgeFromPsr( $entity->getContent()->getStream() );
+            if ($stream->resource()->isSeekable())
+                $stream->rewind();
+
             $uploadStream = new STemporary($stream);
             $stream->resource()->close();
         }
@@ -81,6 +83,7 @@ class CreateBin
         $pBinEntity = $this->repoBins->insert($entity);
         $pBinID     = $pBinEntity->getIdentifier();
 
+
         $rEntity    = new BindataEntity;
         $rEntity
             ->setIdentifier($pBinEntity->getIdentifier())
@@ -94,7 +97,6 @@ class CreateBin
             ->setProtected($pBinEntity->isProtected())
             ->setVersion( new Entity\Bindata\VersionObject($pBinEntity->getVersion()) )
         ;
-
 
         // Event
         //
@@ -111,7 +113,6 @@ class CreateBin
 
             throw $e;
         }
-
 
         // Close Stream
         $uploadStream->resource()
