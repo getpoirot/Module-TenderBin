@@ -5,6 +5,7 @@ use Module\TenderBin\Interfaces\Model\BinData\iObjectVersion;
 use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Model\Entity\Bindata\OwnerObject;
 use Module\TenderBin\Model\Entity\Bindata\VersionObject;
+use Poirot\Psr7\UploadedFile;
 use Poirot\Std\Interfaces\Struct\iData;
 use Poirot\Std\Struct\DataEntity;
 use Poirot\Std\Struct\DataOptionsOpen;
@@ -285,4 +286,17 @@ class BindataEntity
         $this->version = $version;
         return $this;
     }
+
+
+    // ..
+
+    /*
+    function __destruct()
+    {
+        if ($this->getContent() instanceof UploadedFile) {
+            // Close Stream
+            $this->getContent()->getStream()->close();
+        }
+    }
+    */
 }
