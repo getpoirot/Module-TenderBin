@@ -272,6 +272,29 @@ class BindataRepo
     }
 
     /**
+     * Find Match By Given Hashes ID
+     *
+     * @param array $hash
+     *
+     * @return \Traversable
+     */
+    function findMatchWithHashes(array $hash)
+    {
+        // Wrap hash ids
+        foreach ($hash as $i => $h)
+            $hash[$i] = $this->attainNextIdentifier($h);
+
+
+        $r = $this->_query()->find([
+            '_id' => [
+                '$in' => $hash
+            ]
+        ]);
+
+        return $this->_wrapFileLoaderIterator($r);
+    }
+
+    /**
      * Find By Search Term
      *
      * - exclude content from retrieved bins

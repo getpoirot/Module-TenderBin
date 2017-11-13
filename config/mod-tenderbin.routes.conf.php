@@ -51,6 +51,30 @@ return [
                 ],
             ],
 
+            'bunch' => [
+                'route' => 'RouteSegment',
+                'options' => [
+                    'criteria'    => '/bunch',
+                    'match_whole' => false,
+                ],
+                'routes' => [
+                    // Retrieve Bin Meta Info
+                    'meta' => [
+                        'route' => 'RouteMethodSegment',
+                        'options' => [
+                            'criteria'    => '/meta',
+                            'method'      => 'POST',
+                            'match_whole' => true,
+                        ],
+                        'params'  => [
+                            ListenerDispatch::ACTIONS => [
+                                \Module\TenderBin\Actions\ListMetaBinAction::class,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+
             // Create Bin
             'create' => [
                 'route' => 'RouteMethodSegment',

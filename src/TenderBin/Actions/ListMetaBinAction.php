@@ -1,18 +1,20 @@
 <?php
 namespace Module\TenderBin\Actions;
 
+use Module\TenderBin\Model\Entity\BindataEntity;
+use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
 use Poirot\Http\HttpResponse;
 use Module\HttpFoundation\Events\Listener\ListenerDispatch;
-use Module\TenderBin\Exception\exResourceNotFound;
 use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
+use Poirot\OAuth2Client\Interfaces\iAccessToken;
 use Poirot\Http\Header\FactoryHttpHeader;
 use Poirot\Http\Interfaces\iHeaders;
 use Poirot\Http\Interfaces\iHttpRequest;
-use Poirot\OAuth2Client\Interfaces\iAccessToken;
+use Poirot\Std\Exceptions\exUnexpectedValue;
 
 
-class GetMetaBinAction
+class ListMetaBinAction
     extends aAction
 {
     /** @var iRepoBindata */
@@ -34,63 +36,45 @@ class GetMetaBinAction
 
 
     /**
-     * Retrieve Bin Meta Info
+     * List Retrieve Bin Meta Info
      *
-     * @param string       $resource_hash
      * @param iAccessToken $token
      *
      * @return array
      * @throws \Exception
      */
-    function __invoke($resource_hash = null, $token = null)
+    function __invoke($token = null)
     {
-        try {
-            if (false === $binData = $this->repoBins->findOneByHash($resource_hash))
-                throw new exResourceNotFound(sprintf(
-                    'Resource (%s) not found.'
-                    , $resource_hash
-                ));
-        } catch (\Exception $e) {
-            throw new exResourceNotFound;
+        ## Parse Given Hashes From Request
+        #
+        $data = ParseRequestData::_($this->request)->parseBody();
+        if (! isset($data['hashes']))
+            throw new exUnexpectedValue('Required Parameter "hashes" not exists.');
+
+
+        ## Retrieve Resources From Given Hashes
+        #
+        $hashes = $data['hashes'];
+        $bins   = $this->repoBins->findMatchWithHashes($hashes);
+
+        $metaResponse = [];
+        /** @var BindataEntity $bin */
+        foreach ($bins as $bin) {
+            // has user access to edit content?
+            $this->assertAccessPermissionOnBindata(
+                $bin
+                , $token
+                , false // just if its not protected resource
+            );
+
+
+            $bin = \Module\TenderBin\toResponseArrayFromBinEntity($bin);
+            $metaResponse[$bin['bindata']['hash']] = $bin['bindata']['meta'];
         }
 
-
-
-        // has user access to edit content?
-        $this->assertAccessPermissionOnBindata(
-            $binData
-            , $token
-            , false // just if its not protected resource
-        );
-
-
-        # Retrieve Available Versions
-        $subVers  = $this->repoBins->findSubVersionsOf($resource_hash);
-        $versions = array();
-        /** @var iBindata $sv */
-        foreach ($subVers as $sv) {
-            # Build Response
-            $linkParams = [
-                'resource_hash' => $sv->getIdentifier(), ];
-
-            if ( $sv->getMeta()->has('is_file') ) {
-                $linkParams += [
-                    'filename' => $sv->getMeta()->get('filename'), ];
-            }
-
-            $versions[$sv->getVersion()->getTag()] = [
-                'bindata' => [
-                    'uid' => $v = (string) $sv->getIdentifier(),
-                ],
-                '_link' => ( $v ) ? (string) \Module\HttpFoundation\Actions::url(
-                    'main/tenderbin/resource/'
-                    , $linkParams
-                ) : null,
-            ];
-        }
-
-
-        return ['binData' => $binData, 'versions' => $versions];
+        return [
+            ListenerDispatch::RESULT_DISPATCH => $metaResponse,
+        ];
     }
 
 

@@ -66,6 +66,15 @@ interface iRepoBindata
     function findOneByHash($hash);
 
     /**
+     * Find Match By Given Hashes ID
+     *
+     * @param array $hash
+     *
+     * @return \Traversable
+     */
+    function findMatchWithHashes(array $hash);
+
+    /**
      * Find All Subversions Of a Bin Entity
      *
      * @param string|mixed $hash
