@@ -1,8 +1,8 @@
 <?php
 namespace Module\TenderBin\Model\Entity;
 
-use Module\TenderBin\Interfaces\Model\iBindata;
 use Poirot\Std\aValidator;
+use Module\TenderBin\Interfaces\Model\iBindata;
 use Poirot\Std\Exceptions\exUnexpectedValue;
 use Psr\Http\Message\UploadedFileInterface;
 
@@ -51,6 +51,11 @@ class BindataValidate
      */
     function doAssertValidate()
     {
+        // TODO remove this; Dirty fix
+        if ($this->entity->getMimeType() == '*/*')
+            $this->entity->setMimeType('image/jpg');
+
+
         $exceptions = [];
 
         $content = $this->entity->getContent();
