@@ -51,11 +51,6 @@ class BindataValidate
      */
     function doAssertValidate()
     {
-        // TODO remove this; Dirty fix
-        if ($this->entity->getMimeType() == '*/*')
-            $this->entity->setMimeType('image/jpg');
-
-
         $exceptions = [];
 
         $content = $this->entity->getContent();
@@ -77,6 +72,8 @@ class BindataValidate
                 $exceptions[] = new exUnexpectedValue('Error Uploading File; The File Not Received.', 'content');
 
             $mimeType = $content->getClientMediaType();
+            if ($mimeType == '*/*')
+                $mimeType = $this->entity->getMimeType();
 
         } else {
             if (! $this->entity->getMimeType() )
@@ -87,7 +84,6 @@ class BindataValidate
 
 
         $exceptions += $this->_assertMimeType($mimeType);
-
         return $exceptions;
     }
 

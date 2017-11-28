@@ -52,6 +52,7 @@ class CreateBin
 
         } catch (exUnexpectedValue $e)
         {
+            throw $e;
             // TODO Handle Validation ...
             throw new exUnexpectedValue('Validation Failed', null,  400, $e);
         }
@@ -136,7 +137,7 @@ class CreateBin
         $validatorConfig = $this->sapi()->config()
             ->get(\Module\TenderBin\Module::CONF_KEY);
 
-        __(new Entity\BindataValidate($entity, $validatorConfig['validator']))
+        (new Entity\BindataValidate($entity, $validatorConfig['validator']))
             ->assertValidate();
     }
 
