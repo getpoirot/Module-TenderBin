@@ -52,7 +52,6 @@ class CreateBin
 
         } catch (exUnexpectedValue $e)
         {
-            throw $e;
             // TODO Handle Validation ...
             throw new exUnexpectedValue('Validation Failed', null,  400, $e);
         }
