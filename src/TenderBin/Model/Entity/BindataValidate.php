@@ -98,47 +98,24 @@ class BindataValidate
     {
         $r = [];
 
-        if (in_array($mimeType, $this->denied_mime_types)) {
+        if ( in_array($mimeType, $this->denied_mime_types) ) {
             // Exactly This Mime Type Is Denied For Upload ...
             $r[] = new exUnexpectedValue(sprintf('Mime Type (%s) Not Allowed.', $mimeType));
             return $r;
         }
 
 
-
-        $_f__checkMimeTypesInList = function (array $mimesList, $against)
-        {
-            $exMimeType = explode('/', $against);
-
-            $flag = null; // mean we have no list
-            foreach ($mimesList as $mimeDef)
-            {
-                foreach (explode('/', $mimeDef) as $i => $v) {
-                    if ($v == '*')
-                        // Skip This mimeType Definition Part, try next ...
-                        continue;
-
-                    $flag = false; // mean we have a list
-
-                    if (isset($exMimeType[$i]) && strtolower($v) === strtolower($exMimeType[$i]))
-                        return $against; // mean we have given mime in list
-                }
-            }
-
-            return $flag;
-        };
-
-
         // Check Allowed MimeTypes
-
-        if (false === $_f__checkMimeTypesInList($this->allowed_mime_types, $mimeType) ) {
+        //
+        if (false === \Poirot\Std\isMimeMatchInList($this->allowed_mime_types, $mimeType) ) {
             $r[] = new exUnexpectedValue(sprintf('Mime Type (%s) Not Allowed.', $mimeType));
             return $r;
         }
 
-        // Check Denied MimeTypes
 
-        if ($mimeType === $_f__checkMimeTypesInList($this->denied_mime_types, $mimeType)) {
+        // Check Denied MimeTypes
+        //
+        if ($mimeType === \Poirot\Std\isMimeMatchInList($this->denied_mime_types, $mimeType)) {
             $r[] = new exUnexpectedValue(sprintf('Mime Type (%s) Not Allowed.', $mimeType));
             return $r;
         }
