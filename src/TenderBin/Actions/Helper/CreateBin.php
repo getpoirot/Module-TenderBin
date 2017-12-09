@@ -83,6 +83,9 @@ class CreateBin
         $pBinEntity = $this->repoBins->insert($entity);
         $pBinID     = $pBinEntity->getIdentifier();
 
+        $version = new Entity\Bindata\VersionObject();
+        $version->setTag($pBinEntity->getVersion()->getTag());
+        $version->setSubversionOf($this->repoBins->attainNextIdentifier($pBinEntity->getVersion()->getSubversionOf()));
 
         $rEntity    = new BindataEntity;
         $rEntity
@@ -95,7 +98,7 @@ class CreateBin
             ->setDatetimeExpiration($pBinEntity->getDatetimeExpiration())
             ->setDateCreated($pBinEntity->getDateCreated())
             ->setProtected($pBinEntity->isProtected())
-            ->setVersion( new Entity\Bindata\VersionObject($pBinEntity->getVersion()) )
+            ->setVersion( $version )
         ;
 
         // Event

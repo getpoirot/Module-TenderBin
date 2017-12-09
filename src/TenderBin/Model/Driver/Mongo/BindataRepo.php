@@ -116,15 +116,20 @@ class BindataRepo
 
 
         $dateCreated = $entity->getDateCreated();
-        if (!$dateCreated)
+        if (! $dateCreated )
             $dateCreated = new \DateTime();
 
         # Convert given entity to Persistence Entity Object To Insert
         $binData = new Mongo\BindataEntity;
+
+        $version = new Entity\Bindata\VersionObject();
+        $version->setTag($entity->getVersion()->getTag());
+        $version->setSubversionOf($this->attainNextIdentifier($entity->getVersion()->getSubversionOf()));
+
         $binData
             ->setIdentifier( $this->attainNextIdentifier($givenIdentifier) )
             ->setTitle($entity->getTitle())
-            ->setVersion($entity->getVersion())
+            ->setVersion($version)
             ->setMeta($entity->getMeta())
             ->setContent($entity->getContent())
             ->setMimeType($entity->getMimeType())

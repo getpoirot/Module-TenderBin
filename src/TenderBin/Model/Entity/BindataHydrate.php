@@ -214,7 +214,14 @@ class BindataHydrate
         if ($this->version !== null && !$this->version instanceof iObjectVersion)
         {
             $version = new VersionObject;
-            $version->setTag( (string) $this->version );
+
+            if ( is_array($this->version) ) {
+                $version->setTag($this->version['tag']);
+                $version->setSubversionOf($this->version['subversion_of']);
+            } else {
+                $version->setTag( (string) $this->version );
+            }
+
 
             $this->setVersion($version);
         }
