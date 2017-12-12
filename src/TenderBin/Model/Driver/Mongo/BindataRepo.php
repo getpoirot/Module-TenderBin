@@ -124,7 +124,8 @@ class BindataRepo
 
         $version = new Entity\Bindata\VersionObject();
         $version->setTag($entity->getVersion()->getTag());
-        $version->setSubversionOf($this->attainNextIdentifier($entity->getVersion()->getSubversionOf()));
+        (null === $tsb = $entity->getVersion()->getSubversionOf())
+            ?: $version->setSubversionOf($this->attainNextIdentifier($tsb));
 
         $binData
             ->setIdentifier( $this->attainNextIdentifier($givenIdentifier) )

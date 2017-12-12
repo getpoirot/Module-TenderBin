@@ -50,6 +50,7 @@ class CreateBinAction
         $hydrateBindata = new Entity\BindataHydrate(
             Entity\BindataHydrate::parseWith($this->request) );
 
+
         $entityBindata  = new Entity\BindataEntity($hydrateBindata);
         // Determine Owner Identifier From Token
         $entityBindata->setOwnerIdentifier( $this->buildOwnerObjectFromToken($token) );

@@ -85,7 +85,8 @@ class CreateBin
 
         $version = new Entity\Bindata\VersionObject();
         $version->setTag($pBinEntity->getVersion()->getTag());
-        $version->setSubversionOf($this->repoBins->attainNextIdentifier($pBinEntity->getVersion()->getSubversionOf()));
+        (null === $tsb = $pBinEntity->getVersion()->getSubversionOf())
+            ?: $version->setSubversionOf($this->repoBins->attainNextIdentifier());
 
         $rEntity    = new BindataEntity;
         $rEntity
