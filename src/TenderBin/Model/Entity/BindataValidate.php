@@ -72,8 +72,6 @@ class BindataValidate
                 $exceptions[] = new exUnexpectedValue('Error Uploading File; The File Not Received.', 'content');
 
             $mimeType = $content->getClientMediaType();
-            if ($mimeType == '*/*')
-                $mimeType = $this->entity->getMimeType();
 
         } else {
             if (! $this->entity->getMimeType() )

@@ -135,6 +135,9 @@ class BindataHydrate
      */
     function getMimeType()
     {
+        if (! $this->mimeType && $this->content instanceof UploadedFileInterface)
+            $this->mimeType = $this->content->getClientMediaType();
+
         return $this->mimeType;
     }
 

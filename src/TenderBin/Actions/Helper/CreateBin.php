@@ -46,15 +46,9 @@ class CreateBin
      */
     function __invoke(iBindata $entity = null)
     {
-        try
-        {
-            $this->_assertValidateEntity($entity);
-
-        } catch (exUnexpectedValue $e)
-        {
-            // TODO Handle Validation ...
-            throw new exUnexpectedValue('Validation Failed', null,  400, $e);
-        }
+        ## Assert/Validate Request Values
+        #
+        $this->_assertValidateEntity($entity);
 
 
         # Persist Data
@@ -63,13 +57,22 @@ class CreateBin
         if ($entity->getContent() instanceof UploadedFile) {
             // This stream is seekable
             $stream = new StreamBridgeFromPsr( $entity->getContent()->getStream() );
-            if ($stream->resource()->isSeekable())
+            if ( $stream->resource()->isSeekable() )
                 $stream->rewind();
 
-            $uploadStream = new STemporary($stream);
+
+            /** @var UploadedFile $up */
+            $up = $entity->getContent();
+
+            // TODO Using Upstream Cachable Stream
+            $io = STemporary::PHP_MEMORY;
+            if ((int) $up->getSize() > 10000000)
+                // largest files
+                $io = STemporary::PHP_TEMP;
+
+            $uploadStream = new STemporary($stream, $io);
             $stream->resource()->close();
         }
-
 
         // Event
         //
@@ -101,6 +104,7 @@ class CreateBin
             ->setProtected($pBinEntity->isProtected())
             ->setVersion( $version )
         ;
+
 
         // Event
         //
