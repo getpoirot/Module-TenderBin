@@ -55,6 +55,11 @@ class UpdateBinAction
             ));
 
 
+        // Unlimited Execution Time
+        set_time_limit(0);
+
+
+
         ## Assert Token
         #
         $this->assertTokenByOwnerAndScope($token);

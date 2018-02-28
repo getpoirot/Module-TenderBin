@@ -40,6 +40,11 @@ class CreateBinAction
      */
     function __invoke($custom_uid = null, $token = null)
     {
+        // Unlimited Execution Time
+        set_time_limit(0);
+
+
+
         ## Assert Token
         #
         $this->assertTokenByOwnerAndScope($token);
