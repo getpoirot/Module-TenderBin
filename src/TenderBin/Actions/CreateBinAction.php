@@ -5,7 +5,7 @@ use Module\HttpFoundation\Events\Listener\ListenerDispatch;
 use Module\TenderBin\Model\Entity;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Poirot\Http\Interfaces\iHttpRequest;
-use Poirot\OAuth2Client\Interfaces\iAccessToken;
+use Poirot\OAuth2Client\Interfaces\iAccessTokenEntity;
 
 
 class CreateBinAction
@@ -33,7 +33,7 @@ class CreateBinAction
      * Create New Bin and Persist
      *
      * @param string            $custom_uid
-     * @param iAccessToken|null $token
+     * @param iAccessTokenEntity|null $token
      *
      * @return array
      * @throws \Exception

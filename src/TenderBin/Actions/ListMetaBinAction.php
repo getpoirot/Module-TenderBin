@@ -7,7 +7,7 @@ use Poirot\Http\HttpResponse;
 use Module\HttpFoundation\Events\Listener\ListenerDispatch;
 use Module\TenderBin\Interfaces\Model\iBindata;
 use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
-use Poirot\OAuth2Client\Interfaces\iAccessToken;
+use Poirot\OAuth2Client\Interfaces\iAccessTokenEntity;
 use Poirot\Http\Header\FactoryHttpHeader;
 use Poirot\Http\Interfaces\iHeaders;
 use Poirot\Http\Interfaces\iHttpRequest;
@@ -38,7 +38,7 @@ class ListMetaBinAction
     /**
      * List Retrieve Bin Meta Info
      *
-     * @param iAccessToken $token
+     * @param iAccessTokenEntity $token
      *
      * @return array
      * @throws \Exception

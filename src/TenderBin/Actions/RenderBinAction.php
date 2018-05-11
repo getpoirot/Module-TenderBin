@@ -7,7 +7,7 @@ use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Poirot\Http\HttpMessage\Request\Plugin\ParseRequestData;
 use Poirot\Http\Interfaces\iHttpRequest;
 use Poirot\Http\Interfaces\iHttpResponse;
-use Poirot\OAuth2Client\Interfaces\iAccessToken;
+use Poirot\OAuth2Client\Interfaces\iAccessTokenEntity;
 
 
 class RenderBinAction
@@ -39,7 +39,7 @@ class RenderBinAction
      * Render Bin Content Into Browser
      *
      * @param string       $resource_hash
-     * @param iAccessToken $token
+     * @param iAccessTokenEntity $token
      *
      * @return array
      * @throws \Exception

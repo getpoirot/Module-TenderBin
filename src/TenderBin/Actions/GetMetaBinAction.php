@@ -9,7 +9,7 @@ use Module\TenderBin\Interfaces\Model\Repo\iRepoBindata;
 use Poirot\Http\Header\FactoryHttpHeader;
 use Poirot\Http\Interfaces\iHeaders;
 use Poirot\Http\Interfaces\iHttpRequest;
-use Poirot\OAuth2Client\Interfaces\iAccessToken;
+use Poirot\OAuth2Client\Interfaces\iAccessTokenEntity;
 
 
 class GetMetaBinAction
@@ -37,7 +37,7 @@ class GetMetaBinAction
      * Retrieve Bin Meta Info
      *
      * @param string       $resource_hash
-     * @param iAccessToken $token
+     * @param iAccessTokenEntity $token
      *
      * @return array
      * @throws \Exception

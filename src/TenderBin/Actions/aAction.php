@@ -10,7 +10,7 @@ use Poirot\Events\Event\MeeterIoc;
 use Poirot\Events\Interfaces\iEventHeap;
 use Poirot\Events\Interfaces\Respec\iEventProvider;
 use Poirot\Http\Interfaces\iHttpRequest;
-use Poirot\OAuth2Client\Interfaces\iAccessToken;
+use Poirot\OAuth2Client\Interfaces\iAccessTokenEntity;
 
 
 /**
@@ -78,7 +78,7 @@ abstract class aAction
      * - Token Must Bind To Resource Owner If Required
      * - Token Must Match Required Scopes
      *
-     * @param iAccessToken $token
+     * @param iAccessTokenEntity $token
      *
      * @throws exAccessDenied
      */
@@ -97,7 +97,7 @@ abstract class aAction
      * note: determine current user from token
      *
      * @param iBindata     $binData
-     * @param iAccessToken $token
+     * @param iAccessTokenEntity $token
      * @param boolean      $forceCheckPermission Force Check Permission On None Protected Resource
      *                                             when we want update the resource not protected but
      *                                             access must be checked.
@@ -158,13 +158,13 @@ abstract class aAction
     /**
      * Build OwnerObject From Token
      *
-     * @param iAccessToken $token
+     * @param iAccessTokenEntity $token
      *
      * @return OwnerObject
      */
     protected function buildOwnerObjectFromToken($token = null)
     {
-        if (!$token instanceof iAccessToken)
+        if (!$token instanceof iAccessTokenEntity)
             return null;
 
 
