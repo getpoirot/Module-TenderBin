@@ -60,7 +60,7 @@ class RenderTenderStrategy
                 , function ($result = null) use ($self) {
                     return $self->createResponseFromResult($result);
                 }
-                , 1000
+                , self::RENDER_PRIORITY
             )
         ;
 
