@@ -134,8 +134,8 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::ACTIONS => [
-                                \Module\TenderBin\Actions\GetMetaBinAction::functorResponseGetInfoResult(),
                                 \Module\TenderBin\Actions\GetMetaBinAction::class, // this run first
+                                \Module\TenderBin\Actions\GetMetaBinAction::functorResponseGetInfoResult(),
                             ],
                         ],
                     ],
@@ -147,8 +147,8 @@ return [
                         ],
                         'params'  => [
                             ListenerDispatch::ACTIONS => [
-                                \Module\TenderBin\Actions\GetMetaBinAction::functorResponseHeadInfoResult(),
                                 \Module\TenderBin\Actions\GetMetaBinAction::class, // this run first
+                                \Module\TenderBin\Actions\GetMetaBinAction::functorResponseHeadInfoResult(),
                             ],
                         ],
                     ],
