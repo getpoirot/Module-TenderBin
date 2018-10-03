@@ -123,8 +123,11 @@ class CreateBin
         }
 
         // Close Stream
-        $uploadStream->resource()
-            ->close();
+        if ($uploadStream) {
+            $uploadStream->resource()
+                ->close();
+        }
+
 
         return $rEntity;
     }
