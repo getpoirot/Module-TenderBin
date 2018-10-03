@@ -117,9 +117,11 @@ class RenderTenderStrategy
         if ($content instanceof UploadedFileInterface || $content instanceof DownloadFileInterface) {
             $content = $content->getStream();
             $content = new StreamBridgeFromPsr($content);
+
         } elseif (! $content instanceof iStreamable ) {
             $content = new STemporary((string) $content);
             $content->rewind();
+
         }
 
 
@@ -189,6 +191,20 @@ class RenderTenderStrategy
         $response->headers()->insert(FactoryHttpHeader::of(array(
             'Content-Type' => $binData->getMimeType()
         )));
+
+
+        if ( $binData->getMimeType() == 'wwwserver/redirection' )
+        {
+            // Redirect Http Response
+            //
+            $response->headers()->insert(FactoryHttpHeader::of(array(
+                'Location' => $content->read()
+            )));
+
+
+            return $response;
+        }
+
 
 
         $response->setBody($content);
